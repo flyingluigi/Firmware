@@ -117,6 +117,8 @@ set(msg_file_names
 	vision_position_estimate.msg
 	vtol_vehicle_status.msg
 	wind_estimate.msg
+	simulink_app_debug.msg
+	simulink_app_pwm.msg
 	)
 
 # Get absolute paths

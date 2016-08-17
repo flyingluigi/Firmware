@@ -29,17 +29,17 @@
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #
-############################################################################
+#############################################################################
+set(MODULE_CFLAGS)
 px4_add_module(
-	MODULE examples__attitude_estimator_ekf
-	MAIN attitude_estimator_ekf
-	STACK_MAIN 7000
-	STACK_MAX 9000
+	MODULE modules__px4_pwm_out
+	MAIN px4_pwm_out
 	COMPILE_FLAGS
-		-Wno-float-equal
+		-Os
+	STACK_MAIN 1200
+	STACK_MAX 1600
 	SRCS
-		attitude_estimator_ekf_main.cpp
-		codegen/AttitudeEKF.c
+		px4_pwm_out.c
 	DEPENDS
 		platforms__common
 	)

@@ -31,6 +31,7 @@ set(config_module_list
 	systemcmds/ver
 	systemcmds/top
 	systemcmds/motor_ramp
+	#systemcmds/pwm
 
 	modules/attitude_estimator_q
 	modules/commander
@@ -76,6 +77,13 @@ set(config_module_list
 	examples/mc_pos_control_multiplatform
 	examples/ekf_att_pos_estimator
 	examples/attitude_estimator_ekf
+
+
+	#
+	# Custom
+	#
+	
+	modules/px4_pwm_out
 
 	#
 	# Testing

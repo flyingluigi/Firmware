@@ -83,6 +83,12 @@ set(config_module_list
 	#systemcmds/tests
 
 	#
+	# Custom
+	#
+	#
+	modules/px4_pwm_out
+	examples/attitude_estimator_ekf
+
 	# General system control
 	#
 	modules/commander
@@ -99,22 +105,23 @@ set(config_module_list
 	modules/attitude_estimator_q
 	modules/position_estimator_inav
 	modules/local_position_estimator
-	modules/ekf2
+	#modules/ekf2 #user
 
 	#
 	# Vehicle Control
 	#
-	modules/fw_pos_control_l1
-	modules/fw_att_control
+	#modules/fw_pos_control_l1  #user
+	#modules/fw_att_control  #user
 	modules/mc_att_control
 	modules/mc_pos_control
-	modules/vtol_att_control
+	#modules/vtol_att_control  #user
+
 
 	#
 	# Logging
 	#
-	#modules/logger
-	modules/sdlog2
+	modules/logger
+	#modules/sdlog2  #user
 
 	#
 	# Library modules
@@ -124,6 +131,7 @@ set(config_module_list
 	modules/systemlib/mixer
 	modules/uORB
 	modules/dataman
+
 
 	#
 	# Libraries
@@ -142,6 +150,7 @@ set(config_module_list
 	lib/tailsitter_recovery
 	lib/DriverFramework/framework
 	platforms/nuttx
+
 
 	# had to add for cmake, not sure why wasn't in original config
 	platforms/common 
