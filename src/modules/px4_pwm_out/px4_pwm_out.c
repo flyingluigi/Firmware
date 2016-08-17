@@ -173,7 +173,7 @@ int px4_pwm_out_thread_main(int argc, char *argv[])
     
     int rc;
     
-    /* enable pwm outputs, set to disarm  */
+    /* enable pwm outputs, set to disarm */
     g_pwm_fd = px4_open(g_pwm_device, 0);
     printf("OPEN PWM fd = %d\n", g_pwm_fd);
     
