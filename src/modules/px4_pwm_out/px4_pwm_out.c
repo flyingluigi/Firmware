@@ -32,10 +32,10 @@
  ****************************************************************************/
 
 /**
- * @file px4_daemon_app.c
- * application example for PX4 autopilot
+ * @file px4_pwm_out.c
+ * Application to write directly to ESCs
  *
- * @author Mocher Marcell <mail@example.com>
+ * @author Mocher Marcell <marcell.mocher@fh-joanneum.at>
  */
 
 
@@ -64,23 +64,22 @@
 #include <drivers/drv_pwm_output.h>
 
 
-static bool thread_should_exit = false;		/**< daemon exit flag */
-static bool thread_running = false;		/**< daemon status flag */
-static int px4_pwm_out_task;				/**< Handle of daemon task / thread */
+static bool thread_should_exit = false;		/**< px4_pwm_out exit flag */
+static bool thread_running = false;		/**< px4_pwm_out status flag */
+static int  px4_pwm_out_task;			/**< Handle of px4_pwm_out task / thread */
 
-perf_counter_t _pwm_out_perf;
 const char *g_pwm_device = PWM_OUTPUT0_DEVICE_PATH;
-int g_pwm_fd = -1;
+int  g_pwm_fd = -1;
 bool g_pwm_enabled = false;
 
 
 /**
- * daemon management function.
+ * px4_pwm_out management function.
  */
 __EXPORT int px4_pwm_out_main(int argc, char *argv[]);
 
 /**
- * Mainloop of daemon.
+ * Mainloop of px4_pwm_out.
  */
 int px4_pwm_out_thread_main(int argc, char *argv[]);
 
@@ -100,7 +99,7 @@ static void
 }
 
 /**
- * The daemon app only briefly exists to start
+ * The px4_pwm_out app only briefly exists to start
  * the background job. The stack size assigned in the
  * Makefile does only apply to this management task.
  *
@@ -173,7 +172,7 @@ int px4_pwm_out_thread_main(int argc, char *argv[])
     
     int rc;
     
-    /* enable pwm outputs, set to disarm */
+    /* enable pwm outputs, set to arm */
     g_pwm_fd = px4_open(g_pwm_device, 0);
     printf("OPEN PWM fd = %d\n", g_pwm_fd);
     
@@ -184,11 +183,22 @@ int px4_pwm_out_thread_main(int argc, char *argv[])
     rc = px4_ioctl(g_pwm_fd, PWM_SERVO_SET_UPDATE_RATE, 400);
     if (rc != OK)
         err(1, "PWM_SERVO_SET_UPDATE_RATE");
-    rc = px4_ioctl(g_pwm_fd, PWM_SERVO_DISARM, 0);
+    rc = px4_ioctl(g_pwm_fd, PWM_SERVO_ARM, 0);
     if (rc != OK)
-        err(1, "PWM_SERVO_DISARM");
-    g_pwm_enabled = false;
-    
+        err(1, "PWM_SERVO_ARM");
+    else{
+        px4_ioctl(g_pwm_fd, PWM_SERVO_SET(0), 1000);
+        px4_ioctl(g_pwm_fd, PWM_SERVO_SET(1), 1000);
+        px4_ioctl(g_pwm_fd, PWM_SERVO_SET(2), 1000);
+        px4_ioctl(g_pwm_fd, PWM_SERVO_SET(3), 1000);
+        px4_ioctl(g_pwm_fd, PWM_SERVO_SET(4), 1000);
+        px4_ioctl(g_pwm_fd, PWM_SERVO_SET(5), 1000);
+        px4_ioctl(g_pwm_fd, PWM_SERVO_SET(6), 1000);
+        px4_ioctl(g_pwm_fd, PWM_SERVO_SET(7), 1000);
+        printf("***ARMED*** PWM fd = %d\n", g_pwm_fd);
+    }
+
+
     int error_counter = 0;
     
     while (!thread_should_exit) {
@@ -218,47 +228,6 @@ int px4_pwm_out_thread_main(int argc, char *argv[])
                 orb_copy(ORB_ID(simulink_app_pwm), _pwm_sub_fd, &pwm_val);
                 
                 if (pwm_val.arm == true) {
-                    if (g_pwm_enabled == false) {
-                        
-                        /* arm system */
-                        rc = px4_ioctl(g_pwm_fd, PWM_SERVO_ARM, 0);
-                        if (rc != OK)
-                            err(1,"PWM_SERVO_ARM");
-                        else {
-                            px4_ioctl(g_pwm_fd, PWM_SERVO_SET(0), 1000);
-                            px4_ioctl(g_pwm_fd, PWM_SERVO_SET(1), 1000);
-                            px4_ioctl(g_pwm_fd, PWM_SERVO_SET(2), 1000);
-                            px4_ioctl(g_pwm_fd, PWM_SERVO_SET(3), 1000);
-                            px4_ioctl(g_pwm_fd, PWM_SERVO_SET(4), 1000);
-                            px4_ioctl(g_pwm_fd, PWM_SERVO_SET(5), 1000);
-                            px4_ioctl(g_pwm_fd, PWM_SERVO_SET(6), 1000);
-                            px4_ioctl(g_pwm_fd, PWM_SERVO_SET(7), 1000);
-                            g_pwm_enabled = true;
-                            printf("***ARMED*** PWM fd = %d\n", g_pwm_fd);
-                        }
-                    }
-                } else {
-                    if (g_pwm_enabled == true) {
-                        
-                        /* disarm system if enabled */
-                        px4_ioctl(g_pwm_fd, PWM_SERVO_SET(0), 1000);
-                        px4_ioctl(g_pwm_fd, PWM_SERVO_SET(1), 1000);
-                        px4_ioctl(g_pwm_fd, PWM_SERVO_SET(2), 1000);
-                        px4_ioctl(g_pwm_fd, PWM_SERVO_SET(3), 1000);
-                        px4_ioctl(g_pwm_fd, PWM_SERVO_SET(4), 1000);
-                        px4_ioctl(g_pwm_fd, PWM_SERVO_SET(5), 1000);
-                        px4_ioctl(g_pwm_fd, PWM_SERVO_SET(6), 1000);
-                        px4_ioctl(g_pwm_fd, PWM_SERVO_SET(7), 1000);
-                        rc = px4_ioctl(g_pwm_fd, PWM_SERVO_DISARM, 0);
-                        g_pwm_enabled = false;
-                        if (rc != OK)
-                            err(1, "PWM_SERVO_DISARM");
-                        else
-                            printf("***DISARMED*** PWM fd = %d\n", g_pwm_fd);
-                    }
-                }
-                
-                if (g_pwm_enabled) {
                     /* output the PWM signals */
                     px4_ioctl(g_pwm_fd, PWM_SERVO_SET(0), pwm_val.pwm[0]);
                     px4_ioctl(g_pwm_fd, PWM_SERVO_SET(1), pwm_val.pwm[1]);
@@ -268,8 +237,17 @@ int px4_pwm_out_thread_main(int argc, char *argv[])
                     px4_ioctl(g_pwm_fd, PWM_SERVO_SET(5), pwm_val.pwm[5]);
                     px4_ioctl(g_pwm_fd, PWM_SERVO_SET(6), pwm_val.pwm[6]);
                     px4_ioctl(g_pwm_fd, PWM_SERVO_SET(7), pwm_val.pwm[7]);
+                } else {
+
+                    px4_ioctl(g_pwm_fd, PWM_SERVO_SET(0), 1000);
+                    px4_ioctl(g_pwm_fd, PWM_SERVO_SET(1), 1000);
+                    px4_ioctl(g_pwm_fd, PWM_SERVO_SET(2), 1000);
+                    px4_ioctl(g_pwm_fd, PWM_SERVO_SET(3), 1000);
+                    px4_ioctl(g_pwm_fd, PWM_SERVO_SET(4), 1000);
+                    px4_ioctl(g_pwm_fd, PWM_SERVO_SET(5), 1000);
+                    px4_ioctl(g_pwm_fd, PWM_SERVO_SET(6), 1000);
+                    px4_ioctl(g_pwm_fd, PWM_SERVO_SET(7), 1000);
                 }
-                
             }
             
         }

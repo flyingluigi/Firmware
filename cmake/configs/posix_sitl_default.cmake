@@ -84,6 +84,7 @@ set(config_module_list
 	#
 	
 	modules/px4_pwm_out
+	modules/oc_ndi_control
 
 	#
 	# Testing
