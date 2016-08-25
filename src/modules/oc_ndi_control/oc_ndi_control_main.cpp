@@ -446,9 +446,9 @@ int oc_ndi_control_thread(int argc, char *argv[])
     _params_handles.pitch_rate_p    =   param_find("NDI_PITCHRATE_P");
     _params_handles.pitch_rate_ff   =   param_find("NDI_PITCHRATE_FF");
 
-    _params_handles.yaw_p   =   param_find("MC_YAW_P");
+    _params_handles.yaw_p   =   param_find("NDI_YAW_P");
     _params_handles.yaw_rate_p  =   param_find("NDI_YAWRATE_P");
-    _params_handles.yaw_rate_ff =   param_find("MC_YAWRATE_FF");
+    _params_handles.yaw_rate_ff =   param_find("NDI_YAWRATE_FF");
 
     _params_handles.model_ixx   =   param_find("NDI_MODEL_IXX");
     _params_handles.model_iyy   =   param_find("NDI_MODEL_IYY");
