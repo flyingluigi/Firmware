@@ -88,6 +88,7 @@ set(config_module_list
 	#
 	modules/px4_pwm_out
 	modules/oc_ndi_control
+	modules/qc_ndi_control
 	examples/attitude_estimator_ekf
 
 	#examples/simulink_codegen_example

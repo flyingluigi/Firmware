@@ -88,8 +88,8 @@ extern "C" {
 }
 #endif
 
-static bool thread_should_exit = false;		/**< qc_ndi_control exit flag */
-static bool thread_running = false;		/**< qc_ndi_control status flag */
+static bool qc_thread_should_exit = false;		/**< qc_ndi_control exit flag */
+static bool qc_thread_running = false;		/**< qc_ndi_control status flag */
 static int qc_ndi_control_task;			/**< qc_ndi_control of daemon task / thread */
 
 struct {
@@ -117,7 +117,7 @@ struct {
         param_t max_rate;
         param_t max_vel;
         param_t max_angle;
-        }   _params_handles;
+        }   _params_qc_handles_qc;
 
 struct {
         float att_p[3]; /**< P gain for angular error */
@@ -128,23 +128,23 @@ struct {
         float vel_i[3];
         float pos_p[3];
         float max_val[3];
-} _params;
+} _params_qc;
 
-int rc_channels_sub;
-int vehicle_attitude_sub;
-int vehicle_local_position_sub;
-int control_state_sub;
-int params_sub;
+int qc_rc_channels_sub;
+int qc_vehicle_attitude_sub;
+int qc_vehicle_local_position_sub;
+int qc_control_state_sub;
+int qc_params_qc_sub;
 
-orb_advert_t simulink_app_pwm_pub;
-orb_advert_t simulink_app_debug_pub;
+orb_advert_t qc_simulink_app_pwm_pub;
+orb_advert_t qc_simulink_app_debug_pub;
 
-struct rc_channels_s rc_in;
-struct vehicle_attitude_s attitude;
-struct vehicle_local_position_s local_position;
-struct control_state_s control_state;
-struct simulink_app_pwm_s pwm_out;
-struct simulink_app_debug_s ndi_debug;
+struct rc_channels_s qc_rc_in;
+struct vehicle_attitude_s qc_attitude;
+struct vehicle_local_position_s qc_local_position;
+struct control_state_s qc_control_state;
+struct simulink_app_pwm_s qc_pwm_out;
+struct simulink_app_debug_s qc_ndi_debug;
 
 extern "C" __EXPORT int qc_ndi_control_main(int argc, char *argv[]);
 
@@ -153,7 +153,7 @@ using math::Matrix;
 using math::Quaternion;
 
 
-static DevHandle h_rgbleds;
+static DevHandle qc_h_rgbleds;
 
 
 /**
@@ -162,184 +162,184 @@ static DevHandle h_rgbleds;
 int qc_ndi_control_thread(int argc, char *argv[]);
 
 /**
- * Print the correct usage.
+ * Print the correct qc_usage.
  */
-static void usage(const char *reason);
+static void qc_usage(const char *reason);
 
 /**
  * Update our local parameter cache.
  */
-int parameters_update();
+int qc_parameters_update();
 
 /**
  * Check for parameter update and handle it.
  */
-void    parameter_update_poll();
+void    qc_parameter_update_poll();
 
 /**
  * Check for rc in updates.
  */
-void    rc_channels_poll();
+void    qc_rc_channels_poll();
 
 /**
  * Check for attitude updates.
  */
 
 
-void   attitude_poll();
+void   qc_attitude_poll();
 
 /**
  * Check for local position updates.
  */
-void   vehicle_local_position_poll();
+void   qc_vehicle_local_position_poll();
 
 /**
  * Check for attitude updates.
  */
-void   control_state_poll();
+void   qc_control_state_poll();
 
 
 static void
-usage(const char *reason)
+qc_usage(const char *reason)
 {
 	if (reason) {
                 fprintf(stderr, "%s\n", reason);
 	}
 
-        fprintf(stderr, "usage: qc_ndi_control {start|stop|status} [-p <additional params>]\n\n");
+        fprintf(stderr, "qc_usage: qc_ndi_control {start|stop|status} [-p <additional params>]\n\n");
 }
 
-int parameters_update(){
+int qc_parameters_update(){
     float v;
 
     /* roll gains */
-    param_get(_params_handles.roll_p, &v);
-    _params.att_p[0] = v;
-    param_get(_params_handles.roll_rate_p, &v);
-    _params.rate_p[0] = v;
-    param_get(_params_handles.roll_rate_ff, &v);
-    _params.rate_ff[0] = v;
+    param_get(_params_qc_handles_qc.roll_p, &v);
+    _params_qc.att_p[0] = v;
+    param_get(_params_qc_handles_qc.roll_rate_p, &v);
+    _params_qc.rate_p[0] = v;
+    param_get(_params_qc_handles_qc.roll_rate_ff, &v);
+    _params_qc.rate_ff[0] = v;
 
     /* pitch gains */
-    param_get(_params_handles.pitch_p, &v);
-    _params.att_p[1] = v;
-    param_get(_params_handles.pitch_rate_p, &v);
-    _params.rate_p[1]  = v;
-    param_get(_params_handles.pitch_rate_ff, &v);
-    _params.rate_ff[1]  = v;
+    param_get(_params_qc_handles_qc.pitch_p, &v);
+    _params_qc.att_p[1] = v;
+    param_get(_params_qc_handles_qc.pitch_rate_p, &v);
+    _params_qc.rate_p[1]  = v;
+    param_get(_params_qc_handles_qc.pitch_rate_ff, &v);
+    _params_qc.rate_ff[1]  = v;
 
-    param_get(_params_handles.yaw_p, &v);
-    _params.att_p[2] = v;
-    param_get(_params_handles.yaw_rate_p, &v);
-    _params.rate_p[2] = v;
-    param_get(_params_handles.yaw_rate_ff, &v);
-    _params.rate_ff[2] = v;
+    param_get(_params_qc_handles_qc.yaw_p, &v);
+    _params_qc.att_p[2] = v;
+    param_get(_params_qc_handles_qc.yaw_rate_p, &v);
+    _params_qc.rate_p[2] = v;
+    param_get(_params_qc_handles_qc.yaw_rate_ff, &v);
+    _params_qc.rate_ff[2] = v;
 
     /* velocity gains */
-    param_get(_params_handles.vel_x_kp, &v);
-    _params.vel_p[0] = v;
-    param_get(_params_handles.vel_y_kp, &v);
-    _params.vel_p[1] = v;
-    param_get(_params_handles.vel_z_kp, &v);
-    _params.vel_p[2] = v;
+    param_get(_params_qc_handles_qc.vel_x_kp, &v);
+    _params_qc.vel_p[0] = v;
+    param_get(_params_qc_handles_qc.vel_y_kp, &v);
+    _params_qc.vel_p[1] = v;
+    param_get(_params_qc_handles_qc.vel_z_kp, &v);
+    _params_qc.vel_p[2] = v;
 
 
-    param_get(_params_handles.vel_x_ki, &v);
-    _params.vel_i[0] = v;
-    param_get(_params_handles.vel_y_ki, &v);
-    _params.vel_i[1] = v;
-    param_get(_params_handles.vel_z_ki, &v);
-    _params.vel_i[2] = v;
+    param_get(_params_qc_handles_qc.vel_x_ki, &v);
+    _params_qc.vel_i[0] = v;
+    param_get(_params_qc_handles_qc.vel_y_ki, &v);
+    _params_qc.vel_i[1] = v;
+    param_get(_params_qc_handles_qc.vel_z_ki, &v);
+    _params_qc.vel_i[2] = v;
 
 
     /* position gains */
-    param_get(_params_handles.pos_x_kp, &v);
-    _params.pos_p[0] = v;
-    param_get(_params_handles.pos_y_kp, &v);
-    _params.pos_p[1] = v;
-    param_get(_params_handles.pos_z_kp, &v);
-    _params.pos_p[2] = v;
+    param_get(_params_qc_handles_qc.pos_x_kp, &v);
+    _params_qc.pos_p[0] = v;
+    param_get(_params_qc_handles_qc.pos_y_kp, &v);
+    _params_qc.pos_p[1] = v;
+    param_get(_params_qc_handles_qc.pos_z_kp, &v);
+    _params_qc.pos_p[2] = v;
 
 
     /* model parameters */
-    param_get(_params_handles.model_ixx, &v);
-    _params.model_i[0] = v;
-    param_get(_params_handles.model_iyy, &v);
-    _params.model_i[1] = v;
-    param_get(_params_handles.model_izz, &v);
-    _params.model_i[2] = v;
+    param_get(_params_qc_handles_qc.model_ixx, &v);
+    _params_qc.model_i[0] = v;
+    param_get(_params_qc_handles_qc.model_iyy, &v);
+    _params_qc.model_i[1] = v;
+    param_get(_params_qc_handles_qc.model_izz, &v);
+    _params_qc.model_i[2] = v;
 
 
     /* model max values */
-    param_get(_params_handles.max_rate, &v);
-    _params.max_val[0] = v * M_PI_F/180.0f;
-    param_get(_params_handles.max_angle, &v);
-    _params.max_val[1] = v * M_PI_F/180.0f;
-    param_get(_params_handles.max_vel, &v);
-    _params.max_val[2] = v;
+    param_get(_params_qc_handles_qc.max_rate, &v);
+    _params_qc.max_val[0] = v * M_PI_F/180.0f;
+    param_get(_params_qc_handles_qc.max_angle, &v);
+    _params_qc.max_val[1] = v * M_PI_F/180.0f;
+    param_get(_params_qc_handles_qc.max_vel, &v);
+    _params_qc.max_val[2] = v;
 
     return OK;
 }
 
-void    parameter_update_poll(){
+void    qc_parameter_update_poll(){
 
     bool updated;
 
     /* Check if parameters have changed */
-     orb_check(params_sub, &updated);
+     orb_check(qc_params_qc_sub, &updated);
 
     if (updated) {
         struct parameter_update_s param_update;
-        orb_copy(ORB_ID(parameter_update), params_sub, &param_update);
-        parameters_update();
+        orb_copy(ORB_ID(parameter_update), qc_params_qc_sub, &param_update);
+        qc_parameters_update();
         param_save_default();
     }
 }
 
-void    rc_channels_poll()
+void    qc_rc_channels_poll()
 {
     /* check if there is a new setpoint */
     bool updated;
-    orb_check(rc_channels_sub, &updated);
+    orb_check(qc_rc_channels_sub, &updated);
 
     if (updated) {
-        orb_copy(ORB_ID(rc_channels), rc_channels_sub, &rc_in);
+        orb_copy(ORB_ID(rc_channels), qc_rc_channels_sub, &qc_rc_in);
     }
 }
 
 
-void   attitude_poll()
+void   qc_attitude_poll()
 {
     /* check if there is a new setpoint */
     bool updated;
-    orb_check(vehicle_attitude_sub, &updated);
+    orb_check(qc_vehicle_attitude_sub, &updated);
 
     if (updated) {
-            orb_copy(ORB_ID(vehicle_attitude), vehicle_attitude_sub, &attitude);
+            orb_copy(ORB_ID(vehicle_attitude), qc_vehicle_attitude_sub, &qc_attitude);
     }
 
 }
 
-void   vehicle_local_position_poll()
+void   qc_vehicle_local_position_poll()
 {
     /* check if there is a new setpoint */
     bool updated;
-    orb_check(vehicle_local_position_sub, &updated);
+    orb_check(qc_vehicle_local_position_sub, &updated);
 
     if (updated) {
-            orb_copy(ORB_ID(vehicle_local_position), vehicle_local_position_sub, &local_position);
+            orb_copy(ORB_ID(vehicle_local_position), qc_vehicle_local_position_sub, &qc_local_position);
     }
 
 }
 
-void   control_state_poll()
+void   qc_control_state_poll()
 {
     /* check if there is a new setpoint */
     bool updated;
-    orb_check(control_state_sub, &updated);
+    orb_check(qc_control_state_sub, &updated);
 
     if (updated) {
-            orb_copy(ORB_ID(control_state), control_state_sub, &control_state);
+            orb_copy(ORB_ID(control_state), qc_control_state_sub, &qc_control_state);
     }
 
 }
@@ -355,19 +355,19 @@ void   control_state_poll()
 int qc_ndi_control_main(int argc, char *argv[])
 {
 	if (argc < 2) {
-		usage("missing command");
+		qc_usage("missing command");
                 return 1;
 	}
 
 	if (!strcmp(argv[1], "start")) {
 
-		if (thread_running) {
+		if (qc_thread_running) {
                         warnx("already running\n");
 			/* this is not an error */
                         return 0;
 		}
 
-		thread_should_exit = false;
+		qc_thread_should_exit = false;
                 qc_ndi_control_task = px4_task_spawn_cmd("qc_ndi_control",
 					     SCHED_DEFAULT,
                                              SCHED_PRIORITY_MAX - 5,
@@ -378,12 +378,12 @@ int qc_ndi_control_main(int argc, char *argv[])
 	}
 
 	if (!strcmp(argv[1], "stop")) {
-		thread_should_exit = true;
+		qc_thread_should_exit = true;
                 return 0;
 	}
 
 	if (!strcmp(argv[1], "status")) {
-		if (thread_running) {
+		if (qc_thread_running) {
 			warnx("\trunning\n");
                         return 0;
 
@@ -396,7 +396,7 @@ int qc_ndi_control_main(int argc, char *argv[])
                 return 0;
 	}
 
-	usage("unrecognized command");
+	qc_usage("unrecognized command");
         return 1;
 }
 
@@ -413,81 +413,81 @@ int qc_ndi_control_thread(int argc, char *argv[])
     bool oc_ndi_arm = false;
 
     /* subscriptions */
-    rc_channels_sub = orb_subscribe(ORB_ID(rc_channels));
-    vehicle_attitude_sub = orb_subscribe(ORB_ID(vehicle_attitude));
-    vehicle_local_position_sub = orb_subscribe(ORB_ID(vehicle_local_position));
-    control_state_sub = orb_subscribe(ORB_ID(control_state));
-    params_sub = orb_subscribe(ORB_ID(parameter_update));
+    qc_rc_channels_sub = orb_subscribe(ORB_ID(rc_channels));
+    qc_vehicle_attitude_sub = orb_subscribe(ORB_ID(vehicle_attitude));
+    qc_vehicle_local_position_sub = orb_subscribe(ORB_ID(vehicle_local_position));
+    qc_control_state_sub = orb_subscribe(ORB_ID(control_state));
+    qc_params_qc_sub = orb_subscribe(ORB_ID(parameter_update));
 
     /* publications */
-    simulink_app_pwm_pub = orb_advertise(ORB_ID(simulink_app_pwm), &pwm_out);
-    simulink_app_debug_pub  = orb_advertise(ORB_ID(simulink_app_debug), &ndi_debug);
+    qc_simulink_app_pwm_pub = orb_advertise(ORB_ID(simulink_app_pwm), &qc_pwm_out);
+    qc_simulink_app_debug_pub  = orb_advertise(ORB_ID(simulink_app_debug), &qc_ndi_debug);
 
     // declare output device
-    DevMgr::getHandle("/dev/rgbled0",h_rgbleds);
-    if (!h_rgbleds.isValid()) {
+    DevMgr::getHandle("/dev/rgbled0",qc_h_rgbleds);
+    if (!qc_h_rgbleds.isValid()) {
             PX4_WARN("No RGB LED found at " RGBLED0_DEVICE_PATH);
     }
 
 
-    memset(&rc_in, 0, sizeof(rc_in));
-    memset(&attitude, 0, sizeof(attitude));
-    memset(&local_position, 0, sizeof(local_position));
-    memset(&control_state, 0, sizeof(control_state));
-    memset(&pwm_out, 0, sizeof(pwm_out));
-    memset(&ndi_debug, 0, sizeof(ndi_debug));
+    memset(&qc_rc_in, 0, sizeof(qc_rc_in));
+    memset(&qc_attitude, 0, sizeof(qc_attitude));
+    memset(&qc_local_position, 0, sizeof(qc_local_position));
+    memset(&qc_control_state, 0, sizeof(qc_control_state));
+    memset(&qc_pwm_out, 0, sizeof(qc_pwm_out));
+    memset(&qc_ndi_debug, 0, sizeof(qc_ndi_debug));
 
     /*Find Parameters*/
-    _params_handles.roll_p  =   param_find("QC_ROLL_P");
-    _params_handles.roll_rate_p =   param_find("QC_ROLLRATE_P");
-    _params_handles.roll_rate_ff    =   param_find("QC_ROLLRATE_FF");
+    _params_qc_handles_qc.roll_p  =   param_find("QC_ROLL_P");
+    _params_qc_handles_qc.roll_rate_p =   param_find("QC_ROLLRATE_P");
+    _params_qc_handles_qc.roll_rate_ff    =   param_find("QC_ROLLRATE_FF");
 
-    _params_handles.pitch_p =   param_find("QC_PITCH_P");
-    _params_handles.pitch_rate_p    =   param_find("QC_PITCHRATE_P");
-    _params_handles.pitch_rate_ff   =   param_find("QC_PITCHRATE_FF");
+    _params_qc_handles_qc.pitch_p =   param_find("QC_PITCH_P");
+    _params_qc_handles_qc.pitch_rate_p    =   param_find("QC_PITCHRATE_P");
+    _params_qc_handles_qc.pitch_rate_ff   =   param_find("QC_PITCHRATE_FF");
 
-    _params_handles.yaw_p   =   param_find("QC_YAW_P");
-    _params_handles.yaw_rate_p  =   param_find("QC_YAWRATE_P");
-    _params_handles.yaw_rate_ff =   param_find("QC_YAWRATE_FF");
+    _params_qc_handles_qc.yaw_p   =   param_find("QC_YAW_P");
+    _params_qc_handles_qc.yaw_rate_p  =   param_find("QC_YAWRATE_P");
+    _params_qc_handles_qc.yaw_rate_ff =   param_find("QC_YAWRATE_FF");
 
-    _params_handles.model_ixx   =   param_find("QC_MODEL_IXX");
-    _params_handles.model_iyy   =   param_find("QC_MODEL_IYY");
-    _params_handles.model_izz   =   param_find("QC_MODEL_IZZ");
+    _params_qc_handles_qc.model_ixx   =   param_find("QC_MODEL_IXX");
+    _params_qc_handles_qc.model_iyy   =   param_find("QC_MODEL_IYY");
+    _params_qc_handles_qc.model_izz   =   param_find("QC_MODEL_IZZ");
 
-    _params_handles.vel_x_kp   =    param_find("QC_VELX_P");
-    _params_handles.vel_y_kp   =    param_find("QC_VELY_P");
-    _params_handles.vel_z_kp   =    param_find("QC_VELZ_P");
+    _params_qc_handles_qc.vel_x_kp   =    param_find("QC_VELX_P");
+    _params_qc_handles_qc.vel_y_kp   =    param_find("QC_VELY_P");
+    _params_qc_handles_qc.vel_z_kp   =    param_find("QC_VELZ_P");
 
-    _params_handles.vel_x_ki   =    param_find("QC_VELX_I");
-    _params_handles.vel_y_ki   =    param_find("QC_VELY_I");
-    _params_handles.vel_z_ki   =    param_find("QC_VELZ_I");
+    _params_qc_handles_qc.vel_x_ki   =    param_find("QC_VELX_I");
+    _params_qc_handles_qc.vel_y_ki   =    param_find("QC_VELY_I");
+    _params_qc_handles_qc.vel_z_ki   =    param_find("QC_VELZ_I");
 
-    _params_handles.pos_x_kp   =    param_find("QC_POSX_P");
-    _params_handles.pos_y_kp   =    param_find("QC_POSY_P");
-    _params_handles.pos_z_kp   =    param_find("QC_POSZ_P");
+    _params_qc_handles_qc.pos_x_kp   =    param_find("QC_POSX_P");
+    _params_qc_handles_qc.pos_y_kp   =    param_find("QC_POSY_P");
+    _params_qc_handles_qc.pos_z_kp   =    param_find("QC_POSZ_P");
 
-    _params_handles.max_rate =     param_find("QC_MAX_RATE");
-    _params_handles.max_angle =     param_find("QC_MAX_ANGLE");
-    _params_handles.max_vel =     param_find("QC_MAX_Velocity");
+    _params_qc_handles_qc.max_rate =     param_find("QC_MAX_RATE");
+    _params_qc_handles_qc.max_angle =     param_find("QC_MAX_ANGLE");
+    _params_qc_handles_qc.max_vel =     param_find("QC_MAX_Velocity");
 
     /* initialize parameters cache*/
-        parameters_update();
+        qc_parameters_update();
 
 
-    // orb_set_interval(control_state_sub, 4); // Fundamental step size in ms
+    // orb_set_interval(qc_control_state_sub, 4); // Fundamental step size in ms
 
     /* wakeup source: vehicle attitude */
     px4_pollfd_struct_t fds[1];
 
-    fds[0].fd = vehicle_attitude_sub;
+    fds[0].fd = qc_vehicle_attitude_sub;
     fds[0].events = POLLIN;
 
 
-    thread_running = true;
+    qc_thread_running = true;
     /* set leds to disarmed*/
-    h_rgbleds.ioctl(RGBLED_SET_MODE, RGBLED_MODE_BREATHE);
-    h_rgbleds.ioctl(RGBLED_SET_COLOR, RGBLED_COLOR_GREEN);
-    while (!thread_should_exit) {
+    qc_h_rgbleds.ioctl(RGBLED_SET_MODE, RGBLED_MODE_BREATHE);
+    qc_h_rgbleds.ioctl(RGBLED_SET_COLOR, RGBLED_COLOR_GREEN);
+    while (!qc_thread_should_exit) {
         /* wait for up to 100ms for data */
         int poll_ret = px4_poll(&fds[0], (sizeof(fds) / sizeof(fds[0])), 100);
 
@@ -497,7 +497,7 @@ int qc_ndi_control_thread(int argc, char *argv[])
             continue;
         }
         if (poll_ret < 0) {
-            /* this is seriously brc_inad - should be an emergency */
+            /* this is seriously bqc_qc_qc_qc_qc_qc_qc_qc_qc_qc_qc_qc_qc_rc_inad - should be an emergency */
             warn("qc_ndi_control: poll error %d, %d", poll_ret, errno);
             /* sleep a bit before next try */
             usleep(100000);
@@ -521,128 +521,50 @@ int qc_ndi_control_thread(int argc, char *argv[])
             }
 
             /* copy attitude topic */
-            orb_copy(ORB_ID(vehicle_attitude), vehicle_attitude_sub, &attitude);
+            orb_copy(ORB_ID(vehicle_attitude), qc_vehicle_attitude_sub, &qc_attitude);
 
             /* check for updates in other topics */
-            parameter_update_poll();
-            rc_channels_poll();
-            vehicle_local_position_poll();
-            control_state_poll();
-
-            hilicopter_NDI_control_U.param[0] = _params.att_p[0];
-            hilicopter_NDI_control_U.param[1] = _params.att_p[1];
-            hilicopter_NDI_control_U.param[2] = _params.att_p[2];
-            hilicopter_NDI_control_U.param[3] = _params.rate_p[0];
-            hilicopter_NDI_control_U.param[4] = _params.rate_p[1];
-            hilicopter_NDI_control_U.param[5] = _params.rate_p[2];
-            hilicopter_NDI_control_U.param[6] = _params.rate_ff[0];
-            hilicopter_NDI_control_U.param[7] = _params.rate_ff[1];
-            hilicopter_NDI_control_U.param[8] = _params.rate_ff[2];
-            hilicopter_NDI_control_U.param[9] = _params.model_i[0];
-            hilicopter_NDI_control_U.param[10] = _params.model_i[1];
-            hilicopter_NDI_control_U.param[11] = _params.model_i[2];
-            hilicopter_NDI_control_U.param[12] = _params.vel_p[0];
-            hilicopter_NDI_control_U.param[13] = _params.vel_p[1];
-            hilicopter_NDI_control_U.param[14] = _params.vel_p[2];
-            hilicopter_NDI_control_U.param[15] = _params.vel_i[0];
-            hilicopter_NDI_control_U.param[16] = _params.vel_i[1];
-            hilicopter_NDI_control_U.param[17] = _params.vel_i[2];
-            hilicopter_NDI_control_U.param[18] = _params.pos_p[0];
-            hilicopter_NDI_control_U.param[19] = _params.pos_p[1];
-            hilicopter_NDI_control_U.param[20] = _params.pos_p[2];
-            hilicopter_NDI_control_U.param[21] = _params.max_val[0];
-            hilicopter_NDI_control_U.param[22] = _params.max_val[1];
-            hilicopter_NDI_control_U.param[23] = _params.max_val[2];
-
-
-
-            //Quaternion _q = control_state.q;
-            //Vector<3> euler = _q.to_euler();
-
-            hilicopter_NDI_control_U.state[0] = control_state.x_vel;
-            hilicopter_NDI_control_U.state[1] = control_state.y_vel;
-            hilicopter_NDI_control_U.state[2] = control_state.z_vel;
-            hilicopter_NDI_control_U.state[3] = local_position.x;
-            hilicopter_NDI_control_U.state[4] = local_position.y;
-            hilicopter_NDI_control_U.state[5] = local_position.z;
-            hilicopter_NDI_control_U.state[6] = attitude.rollspeed;
-            hilicopter_NDI_control_U.state[7] = attitude.pitchspeed;
-            hilicopter_NDI_control_U.state[8] = attitude.yawspeed;
-            hilicopter_NDI_control_U.state[9] = attitude.roll;
-            hilicopter_NDI_control_U.state[10] = attitude.pitch;
-            hilicopter_NDI_control_U.state[11] = attitude.yaw;
-            hilicopter_NDI_control_U.state[12] = local_position.vx;
-            hilicopter_NDI_control_U.state[13] = local_position.vy;
-            hilicopter_NDI_control_U.state[14] = local_position.vz;
-
-            hilicopter_NDI_control_U.pwm_in[0] = rc_in.channels[0];
-            hilicopter_NDI_control_U.pwm_in[1] = rc_in.channels[1];
-            hilicopter_NDI_control_U.pwm_in[2] = rc_in.channels[2];
-            hilicopter_NDI_control_U.pwm_in[3] = rc_in.channels[3];
-            hilicopter_NDI_control_U.pwm_in[4] = rc_in.channels[4];
-            hilicopter_NDI_control_U.pwm_in[5] = rc_in.channels[5];
-            hilicopter_NDI_control_U.pwm_in[6] = rc_in.channels[6];
-            hilicopter_NDI_control_U.pwm_in[7] = rc_in.channels[7];
-
-            /*Check arming status*/
-            if(rc_in.channels[4] > 0.5f)
-                oc_ndi_arm = true;
-            else
-                oc_ndi_arm = false;
-
-            /* Run code from codegeneration */
+            qc_parameter_update_poll();
+            qc_rc_channels_poll();
+            qc_vehicle_local_position_poll();
+            qc_control_state_poll();
+			
+          
             //hilicopter_NDI_control_step();
 
             /* publish actuator controls */
 
             if(oc_ndi_arm == true){
-                pwm_out.arm = true;
-                pwm_out.timestamp = hrt_absolute_time();
-                pwm_out.pwm[0] = hilicopter_NDI_control_Y.pwm_out[0];
-                pwm_out.pwm[1] = hilicopter_NDI_control_Y.pwm_out[1];
-                pwm_out.pwm[2] = hilicopter_NDI_control_Y.pwm_out[2];
-                pwm_out.pwm[3] = hilicopter_NDI_control_Y.pwm_out[3];
-                pwm_out.pwm[4] = hilicopter_NDI_control_Y.pwm_out[4];
-                pwm_out.pwm[5] = hilicopter_NDI_control_Y.pwm_out[5];
-                pwm_out.pwm[6] = hilicopter_NDI_control_Y.pwm_out[6];
-                pwm_out.pwm[7] = hilicopter_NDI_control_Y.pwm_out[7];
-                h_rgbleds.ioctl(RGBLED_SET_MODE, RGBLED_MODE_BLINK_FAST);
-                h_rgbleds.ioctl(RGBLED_SET_COLOR, RGBLED_COLOR_RED);
+                qc_pwm_out.arm = true;
+                qc_pwm_out.timestamp = hrt_absolute_time();
+                qc_pwm_out.pwm[0] = 1000;
+                qc_pwm_out.pwm[1] = 1000;
+                qc_pwm_out.pwm[2] = 1000;
+                qc_pwm_out.pwm[3] = 1000;
+                qc_pwm_out.pwm[4] = 1000;
+                qc_pwm_out.pwm[5] = 1000;
+                qc_pwm_out.pwm[6] = 1000;
+                qc_pwm_out.pwm[7] = 1000;
+                qc_h_rgbleds.ioctl(RGBLED_SET_MODE, RGBLED_MODE_BLINK_FAST);
+                qc_h_rgbleds.ioctl(RGBLED_SET_COLOR, RGBLED_COLOR_RED);
             } else {
-                pwm_out.arm = false;
-                pwm_out.timestamp = hrt_absolute_time();
-                pwm_out.pwm[0] = 1000;
-                pwm_out.pwm[1] = 1000;
-                pwm_out.pwm[2] = 1000;
-                pwm_out.pwm[3] = 1000;
-                pwm_out.pwm[4] = 1000;
-                pwm_out.pwm[5] = 1000;
-                pwm_out.pwm[6] = 1000;
-                pwm_out.pwm[7] = 1000;
-                h_rgbleds.ioctl(RGBLED_SET_MODE, RGBLED_MODE_BREATHE);
-                h_rgbleds.ioctl(RGBLED_SET_COLOR, RGBLED_COLOR_GREEN);
+                qc_pwm_out.arm = false;
+                qc_pwm_out.timestamp = hrt_absolute_time();
+                qc_pwm_out.pwm[0] = 1000;
+                qc_pwm_out.pwm[1] = 1000;
+                qc_pwm_out.pwm[2] = 1000;
+                qc_pwm_out.pwm[3] = 1000;
+                qc_pwm_out.pwm[4] = 1000;
+                qc_pwm_out.pwm[5] = 1000;
+                qc_pwm_out.pwm[6] = 1000;
+                qc_pwm_out.pwm[7] = 1000;
+                qc_h_rgbleds.ioctl(RGBLED_SET_MODE, RGBLED_MODE_BREATHE);
+                qc_h_rgbleds.ioctl(RGBLED_SET_COLOR, RGBLED_COLOR_GREEN);
             }
-            orb_publish(ORB_ID(simulink_app_pwm), simulink_app_pwm_pub, &pwm_out);
+            orb_publish(ORB_ID(simulink_app_pwm), qc_simulink_app_pwm_pub, &qc_pwm_out);
 
 
-            /* publish debug controls */
-            ndi_debug.timestamp = hrt_absolute_time();
-            ndi_debug.debug[0] = hilicopter_NDI_control_Y.debug[0];
-            ndi_debug.debug[1] = hilicopter_NDI_control_Y.debug[1];
-            ndi_debug.debug[2] = hilicopter_NDI_control_Y.debug[2];
-            ndi_debug.debug[3] = hilicopter_NDI_control_Y.debug[3];
-            ndi_debug.debug[4] = hilicopter_NDI_control_Y.debug[4];
-            ndi_debug.debug[5] = hilicopter_NDI_control_Y.debug[5];
-            ndi_debug.debug[6] = hilicopter_NDI_control_Y.debug[6];
-            ndi_debug.debug[7] = hilicopter_NDI_control_Y.debug[7];
-            ndi_debug.debug[8] = hilicopter_NDI_control_Y.debug[8];
-            ndi_debug.debug[9] = hilicopter_NDI_control_Y.debug[9];
-            ndi_debug.debug[10] = hilicopter_NDI_control_Y.debug[10];
-            ndi_debug.debug[11] = hilicopter_NDI_control_Y.debug[11];
-            ndi_debug.debug[12] = hilicopter_NDI_control_Y.debug[12];
-
-            orb_publish(ORB_ID(simulink_app_debug), simulink_app_debug_pub, &ndi_debug);
-
+            
             perf_end(ndi_loop_perf);
             //PX4_WARN("%0.5f",(double)dt);
             }
@@ -652,7 +574,7 @@ int qc_ndi_control_thread(int argc, char *argv[])
 
     warnx("[qc_ndi_control] exiting.\n");
 
-    thread_running = false;
+    qc_thread_running = false;
 
     return 0;
 }
