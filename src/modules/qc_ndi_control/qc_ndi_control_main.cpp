@@ -82,8 +82,8 @@ using namespace DriverFramework;
 #ifdef __cplusplus
 extern "C" {
 #endif
-//#include "codegen/hilicopter_NDI_control.h"
-//#include "codegen/rtwtypes.h"
+#include "quad_ndi_ert_rtw/quad_ndi.h"
+#include "quad_ndi_ert_rtw/rtwtypes.h"
 #ifdef __cplusplus
 }
 #endif
@@ -214,34 +214,34 @@ int qc_parameters_update(){
 
     /* roll gains */
     param_get(_params_qc_handles_qc.roll_p, &v);
-    _params_qc.att_p[0] = v;
+    _params_qc.att_p[0] = 1/v;
     param_get(_params_qc_handles_qc.roll_rate_p, &v);
-    _params_qc.rate_p[0] = v;
+    _params_qc.rate_p[0] = 1/v;
     param_get(_params_qc_handles_qc.roll_rate_ff, &v);
     _params_qc.rate_ff[0] = v;
 
     /* pitch gains */
     param_get(_params_qc_handles_qc.pitch_p, &v);
-    _params_qc.att_p[1] = v;
+    _params_qc.att_p[1] = 1/v;
     param_get(_params_qc_handles_qc.pitch_rate_p, &v);
-    _params_qc.rate_p[1]  = v;
+    _params_qc.rate_p[1]  = 1/v;
     param_get(_params_qc_handles_qc.pitch_rate_ff, &v);
     _params_qc.rate_ff[1]  = v;
 
     param_get(_params_qc_handles_qc.yaw_p, &v);
-    _params_qc.att_p[2] = v;
+    _params_qc.att_p[2] = 1/v;
     param_get(_params_qc_handles_qc.yaw_rate_p, &v);
-    _params_qc.rate_p[2] = v;
+    _params_qc.rate_p[2] = 1/v;
     param_get(_params_qc_handles_qc.yaw_rate_ff, &v);
     _params_qc.rate_ff[2] = v;
 
     /* velocity gains */
     param_get(_params_qc_handles_qc.vel_x_kp, &v);
-    _params_qc.vel_p[0] = v;
+    _params_qc.vel_p[0] = 1/v;
     param_get(_params_qc_handles_qc.vel_y_kp, &v);
-    _params_qc.vel_p[1] = v;
+    _params_qc.vel_p[1] = 1/v;
     param_get(_params_qc_handles_qc.vel_z_kp, &v);
-    _params_qc.vel_p[2] = v;
+    _params_qc.vel_p[2] = 1/v;
 
 
     param_get(_params_qc_handles_qc.vel_x_ki, &v);
@@ -254,11 +254,11 @@ int qc_parameters_update(){
 
     /* position gains */
     param_get(_params_qc_handles_qc.pos_x_kp, &v);
-    _params_qc.pos_p[0] = v;
+    _params_qc.pos_p[0] = 1/v;
     param_get(_params_qc_handles_qc.pos_y_kp, &v);
-    _params_qc.pos_p[1] = v;
+    _params_qc.pos_p[1] = 1/v;
     param_get(_params_qc_handles_qc.pos_z_kp, &v);
-    _params_qc.pos_p[2] = v;
+    _params_qc.pos_p[2] = 1/v;
 
 
     /* model parameters */
@@ -408,9 +408,9 @@ int qc_ndi_control_thread(int argc, char *argv[])
     /* register the perf counter */
     perf_counter_t ndi_loop_perf = perf_alloc(PC_ELAPSED, "qc_ndi_control");
 
-    //hilicopter_NDI_control_initialize();
+    quad_ndi_initialize();
 
-    bool oc_ndi_arm = false;
+    bool qc_ndi_arm = false;
 
     /* subscriptions */
     qc_rc_channels_sub = orb_subscribe(ORB_ID(rc_channels));
@@ -529,22 +529,64 @@ int qc_ndi_control_thread(int argc, char *argv[])
             qc_vehicle_local_position_poll();
             qc_control_state_poll();
 			
+            quad_ndi_U.param[0] = _params_qc.att_p[0];
+            quad_ndi_U.param[1] = _params_qc.att_p[1];
+            quad_ndi_U.param[2] = _params_qc.att_p[2];
+            quad_ndi_U.param[3] = _params_qc.rate_p[0];
+            quad_ndi_U.param[4] = _params_qc.rate_p[1];
+            quad_ndi_U.param[5] = _params_qc.rate_p[2];
+            quad_ndi_U.param[6] = _params_qc.rate_ff[0];
+            quad_ndi_U.param[7] = _params_qc.rate_ff[1];
+            quad_ndi_U.param[8] = _params_qc.rate_ff[2];
+            quad_ndi_U.param[9] = _params_qc.model_i[0];
+            quad_ndi_U.param[10] = _params_qc.model_i[1];
+            quad_ndi_U.param[11] = _params_qc.model_i[2];
+            quad_ndi_U.param[12] = _params_qc.vel_p[0];
+            quad_ndi_U.param[13] = _params_qc.vel_p[1];
+            quad_ndi_U.param[14] = _params_qc.vel_p[2];
+            quad_ndi_U.param[15] = _params_qc.vel_i[0];
+            quad_ndi_U.param[16] = _params_qc.vel_i[1];
+            quad_ndi_U.param[17] = _params_qc.vel_i[2];
+            quad_ndi_U.param[18] = _params_qc.pos_p[0];
+            quad_ndi_U.param[19] = _params_qc.pos_p[1];
+            quad_ndi_U.param[20] = _params_qc.pos_p[2];
+            quad_ndi_U.param[21] = _params_qc.max_val[0];
+            quad_ndi_U.param[22] = _params_qc.max_val[1];
+            quad_ndi_U.param[23] = _params_qc.max_val[2];
           
-            //hilicopter_NDI_control_step();
-
+            quad_ndi_U.attitude[0] = qc_attitude.roll;
+            quad_ndi_U.attitude[1] = qc_attitude.pitch;
+            quad_ndi_U.attitude[2] = qc_attitude.yaw;
+		  
+            quad_ndi_U.rates[0] = qc_attitude.rollspeed;
+            quad_ndi_U.rates[1] = qc_attitude.pitchspeed;
+            quad_ndi_U.rates[2] = qc_attitude.yawspeed;
+			
+            quad_ndi_U.u_cmd[0] = qc_rc_in.channels[0];
+            quad_ndi_U.u_cmd[1] = qc_rc_in.channels[1];
+            quad_ndi_U.u_cmd[2] = qc_rc_in.channels[3];
+			quad_ndi_U.u_cmd[3] = qc_rc_in.channels[2];
+					  
+					  
+            //main control loop
+            /*Check arming status*/
+			 if(qc_rc_in.channels[4] > 0.5f)
+                qc_ndi_arm = true;
+			 else
+				 qc_ndi_arm = false;
+			
+			
+			quad_ndi_step();
+				
             /* publish actuator controls */
 
-            if(oc_ndi_arm == true){
+            if(qc_ndi_arm == true){
                 qc_pwm_out.arm = true;
                 qc_pwm_out.timestamp = hrt_absolute_time();
-                qc_pwm_out.pwm[0] = 1000;
-                qc_pwm_out.pwm[1] = 1000;
-                qc_pwm_out.pwm[2] = 1000;
-                qc_pwm_out.pwm[3] = 1000;
-                qc_pwm_out.pwm[4] = 1000;
-                qc_pwm_out.pwm[5] = 1000;
-                qc_pwm_out.pwm[6] = 1000;
-                qc_pwm_out.pwm[7] = 1000;
+                qc_pwm_out.pwm[0] = quad_ndi_Y.pwm[0];
+                qc_pwm_out.pwm[1] = quad_ndi_Y.pwm[1];
+                qc_pwm_out.pwm[2] = quad_ndi_Y.pwm[2];
+                qc_pwm_out.pwm[3] = quad_ndi_Y.pwm[3];
                 qc_h_rgbleds.ioctl(RGBLED_SET_MODE, RGBLED_MODE_BLINK_FAST);
                 qc_h_rgbleds.ioctl(RGBLED_SET_COLOR, RGBLED_COLOR_RED);
             } else {
@@ -554,19 +596,22 @@ int qc_ndi_control_thread(int argc, char *argv[])
                 qc_pwm_out.pwm[1] = 1000;
                 qc_pwm_out.pwm[2] = 1000;
                 qc_pwm_out.pwm[3] = 1000;
-                qc_pwm_out.pwm[4] = 1000;
-                qc_pwm_out.pwm[5] = 1000;
-                qc_pwm_out.pwm[6] = 1000;
-                qc_pwm_out.pwm[7] = 1000;
                 qc_h_rgbleds.ioctl(RGBLED_SET_MODE, RGBLED_MODE_BREATHE);
                 qc_h_rgbleds.ioctl(RGBLED_SET_COLOR, RGBLED_COLOR_GREEN);
             }
             orb_publish(ORB_ID(simulink_app_pwm), qc_simulink_app_pwm_pub, &qc_pwm_out);
 
+            /* publish debug controls */
+            qc_ndi_debug.timestamp = hrt_absolute_time();
+            qc_ndi_debug.debug[0] = quad_ndi_Y.debug[0];
+            qc_ndi_debug.debug[1] = quad_ndi_Y.debug[1];
+            qc_ndi_debug.debug[2] = quad_ndi_Y.debug[2];
+
+            orb_publish(ORB_ID(simulink_app_debug), qc_simulink_app_debug_pub, &qc_ndi_debug);
 
             
             perf_end(ndi_loop_perf);
-            //PX4_WARN("%0.5f",(double)dt);
+            PX4_WARN("%0.1f %0.1f %0.1f %0.1f",(double)qc_ndi_debug.debug[0],(double)qc_ndi_debug.debug[1],(double)qc_ndi_debug.debug[3],(double)quad_ndi_U.u_cmd[3]);
             }
 
     }

@@ -46,8 +46,8 @@
  *
  * @min 0.00
  * @max 15
- * @decimal 2
- * @increment 0.01
+ * @decimal 3
+ * @increment 0.001
  * @group Octocopter QC Control
  */
 PARAM_DEFINE_FLOAT(QC_ROLL_P, 0.5f);
@@ -60,11 +60,11 @@ PARAM_DEFINE_FLOAT(QC_ROLL_P, 0.5f);
  *
  * @min 0.00
  * @max 15
- * @decimal 2
- * @increment 0.01
+ * @decimal 3
+ * @increment 0.001
  * @group Octocopter QC Control
  */
-PARAM_DEFINE_FLOAT(QC_ROLLRATE_P, 3.0f);
+PARAM_DEFINE_FLOAT(QC_ROLLRATE_P, 0.1f);
 
 /**
  * Roll Feedforward P gain
@@ -74,11 +74,11 @@ PARAM_DEFINE_FLOAT(QC_ROLLRATE_P, 3.0f);
  *
  * @min 0.00
  * @max 15
- * @decimal 2
- * @increment 0.01
+ * @decimal 3
+ * @increment 0.001
  * @group Octocopter QC Control
  */
-PARAM_DEFINE_FLOAT(QC_ROLLRATE_FF, 0.0f);
+PARAM_DEFINE_FLOAT(QC_ROLLRATE_FF, 1.0f);
 
 /**
  * Pitch P gain
@@ -88,8 +88,8 @@ PARAM_DEFINE_FLOAT(QC_ROLLRATE_FF, 0.0f);
  *
  * @min 0.00
  * @max 15
- * @decimal 2
- * @increment 0.01
+ * @decimal 3
+ * @increment 0.001
  * @group Octocopter QC Control
  */
 PARAM_DEFINE_FLOAT(QC_PITCH_P, 0.5f);
@@ -102,11 +102,11 @@ PARAM_DEFINE_FLOAT(QC_PITCH_P, 0.5f);
  *
  * @min 0.00
  * @max 15
- * @decimal 2
- * @increment 0.01
+ * @decimal 3
+ * @increment 0.001
  * @group Octocopter QC Control
  */
-PARAM_DEFINE_FLOAT(QC_PITCHRATE_P, 3.0f);
+PARAM_DEFINE_FLOAT(QC_PITCHRATE_P, 0.1f);
 
 /**
  * Pitch Feedforward P gain
@@ -116,11 +116,11 @@ PARAM_DEFINE_FLOAT(QC_PITCHRATE_P, 3.0f);
  *
  * @min 0.00
  * @max 15
- * @decimal 2
- * @increment 0.01
+ * @decimal 3
+ * @increment 0.001
  * @group Octocopter QC Control
  */
-PARAM_DEFINE_FLOAT(QC_PITCHRATE_FF, 0.0f);
+PARAM_DEFINE_FLOAT(QC_PITCHRATE_FF, 1.0f);
 
 /**
  * Yaw P gain
@@ -130,8 +130,8 @@ PARAM_DEFINE_FLOAT(QC_PITCHRATE_FF, 0.0f);
  *
  * @min 0.00
  * @max 15
- * @decimal 2
- * @increment 0.01
+ * @decimal 3
+ * @increment 0.001
  * @group Octocopter QC Control
  */
 PARAM_DEFINE_FLOAT(QC_YAW_P, 0.5f);
@@ -144,11 +144,11 @@ PARAM_DEFINE_FLOAT(QC_YAW_P, 0.5f);
  *
  * @min 0.00
  * @max 15
- * @decimal 2
- * @increment 0.01
+ * @decimal 3
+ * @increment 0.001
  * @group Octocopter QC Control
  */
-PARAM_DEFINE_FLOAT(QC_YAWRATE_P, 3.0f);
+PARAM_DEFINE_FLOAT(QC_YAWRATE_P, 0.1f);
 
 /**
  * Yaw Feedforward P gain
@@ -158,11 +158,11 @@ PARAM_DEFINE_FLOAT(QC_YAWRATE_P, 3.0f);
  *
  * @min 0.00
  * @max 1
- * @decimal 2
- * @increment 0.01
+ * @decimal 3
+ * @increment 0.001
  * @group Octocopter QC Control
  */
-PARAM_DEFINE_FLOAT(QC_YAWRATE_FF, 0.2f);
+PARAM_DEFINE_FLOAT(QC_YAWRATE_FF, 0.0f);
 
 
 /**
@@ -216,8 +216,8 @@ PARAM_DEFINE_FLOAT(QC_MODEL_IZZ, 0.2f);
  *
  * @min 0.00
  * @max 15
- * @decimal 2
- * @increment 0.01
+ * @decimal 3
+ * @increment 0.001
  * @group Octocopter QC Control
  */
 PARAM_DEFINE_FLOAT(QC_VELX_P, 1.0f);
@@ -231,8 +231,8 @@ PARAM_DEFINE_FLOAT(QC_VELX_P, 1.0f);
  *
  * @min 0.00
  * @max 15
- * @decimal 2
- * @increment 0.01
+ * @decimal 3
+ * @increment 0.001
  * @group Octocopter QC Control
  */
 PARAM_DEFINE_FLOAT(QC_VELY_P, 1.0f);
@@ -246,8 +246,8 @@ PARAM_DEFINE_FLOAT(QC_VELY_P, 1.0f);
  *
  * @min 0.00
  * @max 15
- * @decimal 2
- * @increment 0.01
+ * @decimal 3
+ * @increment 0.001
  * @group Octocopter QC Control
  */
 PARAM_DEFINE_FLOAT(QC_VELZ_P, 1.0f);
@@ -262,11 +262,11 @@ PARAM_DEFINE_FLOAT(QC_VELZ_P, 1.0f);
  *
  * @min 0.00
  * @max 15
- * @decimal 2
- * @increment 0.01
+ * @decimal 3
+ * @increment 0.001
  * @group Octocopter QC Control
  */
-PARAM_DEFINE_FLOAT(QC_VELX_I, 0.1f);
+PARAM_DEFINE_FLOAT(QC_VELX_I, 0.0f);
 
 /**
  *  Y Velocity Control I gain
@@ -276,11 +276,11 @@ PARAM_DEFINE_FLOAT(QC_VELX_I, 0.1f);
  *
  * @min 0.00
  * @max 15
- * @decimal 2
- * @increment 0.01
+ * @decimal 3
+ * @increment 0.001
  * @group Octocopter QC Control
  */
-PARAM_DEFINE_FLOAT(QC_VELY_I, 0.1f);
+PARAM_DEFINE_FLOAT(QC_VELY_I, 0.2f);
 
 /**
  *  Z Velocity Control I gain
@@ -289,12 +289,12 @@ PARAM_DEFINE_FLOAT(QC_VELY_I, 0.1f);
  *
  *
  * @min 0.00
- * @max 15
- * @decimal 2
- * @increment 0.01
+ * @max 250
+ * @decimal 3
+ * @increment 0.001
  * @group Octocopter QC Control
  */
-PARAM_DEFINE_FLOAT(QC_VELZ_I, 0.1f);
+PARAM_DEFINE_FLOAT(QC_VELZ_I, 50.0f);
 
 
 /**
@@ -304,8 +304,8 @@ PARAM_DEFINE_FLOAT(QC_VELZ_I, 0.1f);
  *
  * @min 0.00
  * @max 15
- * @decimal 2
- * @increment 0.01
+ * @decimal 3
+ * @increment 0.001
  * @group Octocopter QC Control
  */
 PARAM_DEFINE_FLOAT(QC_POSX_P, 1.0f);
@@ -317,8 +317,8 @@ PARAM_DEFINE_FLOAT(QC_POSX_P, 1.0f);
  *
  * @min 0.00
  * @max 15
- * @decimal 2
- * @increment 0.01
+ * @decimal 3
+ * @increment 0.001
  * @group Octocopter QC Control
  */
 PARAM_DEFINE_FLOAT(QC_POSY_P, 1.0f);
@@ -330,8 +330,8 @@ PARAM_DEFINE_FLOAT(QC_POSY_P, 1.0f);
  *
  * @min 0.00
  * @max 15
- * @decimal 2
- * @increment 0.01
+ * @decimal 3
+ * @increment 0.001
  * @group Octocopter QC Control
  */
 PARAM_DEFINE_FLOAT(QC_POSZ_P, 1.0f);
@@ -343,12 +343,12 @@ PARAM_DEFINE_FLOAT(QC_POSZ_P, 1.0f);
  * Maximum rate command in deg
  *
  * @min 0
- * @max 160
+ * @max 250
  * @decimal 0
  * @increment 1
  * @group Octocopter QC Control
  */
-PARAM_DEFINE_FLOAT(QC_MAX_RATE, 90.0f);
+PARAM_DEFINE_FLOAT(QC_MAX_RATE, 180.0f);
 
 
 
@@ -358,12 +358,12 @@ PARAM_DEFINE_FLOAT(QC_MAX_RATE, 90.0f);
  * Maximum angle command in deg
  *
  * @min 0
- * @max 60
+ * @max 90
  * @decimal 0
  * @increment 1
  * @group Octocopter QC Control
  */
-PARAM_DEFINE_FLOAT(QC_MAX_ANGLE, 45.0f);
+PARAM_DEFINE_FLOAT(QC_MAX_ANGLE, 60.0f);
 
 
 /**
