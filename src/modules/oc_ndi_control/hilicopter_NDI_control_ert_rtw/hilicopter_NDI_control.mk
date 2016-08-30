@@ -2,7 +2,7 @@
 ## Makefile generated for Simulink model 'hilicopter_NDI_control'. 
 ## 
 ## Makefile     : hilicopter_NDI_control.mk
-## Generated on : Tue Aug 30 08:38:23 2016
+## Generated on : Tue Aug 30 09:26:38 2016
 ## MATLAB Coder version: 3.0 (R2015b)
 ## 
 ## Build Info:
@@ -194,9 +194,9 @@ DEFINES = $(DEFINES_BUILD_ARGS) $(DEFINES_IMPLIED) $(DEFINES_STANDARD)
 ## SOURCE FILES
 ###########################################################################
 
-SRCS = $(START_DIR)/hilicopter_NDI_control_ert_rtw/hilicopter_NDI_control.c $(START_DIR)/hilicopter_NDI_control_ert_rtw/hilicopter_NDI_control_data.c $(START_DIR)/hilicopter_NDI_control_ert_rtw/rtGetInf.c $(START_DIR)/hilicopter_NDI_control_ert_rtw/rtGetNaN.c $(START_DIR)/hilicopter_NDI_control_ert_rtw/rt_nonfinite.c
+SRCS = $(START_DIR)/hilicopter_NDI_control_ert_rtw/hilicopter_NDI_control.c $(START_DIR)/hilicopter_NDI_control_ert_rtw/hilicopter_NDI_control_data.c
 
-MAIN_SRC = $(START_DIR)/hilicopter_NDI_control_ert_rtw/ert_main.c
+MAIN_SRC = $(MATLAB_ROOT)/rtw/c/src/common/rt_main.c
 
 ALL_SRCS = $(SRCS) $(MAIN_SRC)
 
@@ -204,9 +204,9 @@ ALL_SRCS = $(SRCS) $(MAIN_SRC)
 ## OBJECTS
 ###########################################################################
 
-OBJS = hilicopter_NDI_control.o hilicopter_NDI_control_data.o rtGetInf.o rtGetNaN.o rt_nonfinite.o
+OBJS = hilicopter_NDI_control.o hilicopter_NDI_control_data.o
 
-MAIN_OBJ = ert_main.o
+MAIN_OBJ = rt_main.o
 
 ALL_OBJS = $(OBJS) $(MAIN_OBJ)
 
@@ -346,6 +346,10 @@ $(PRODUCT) : $(OBJS) $(PREBUILT_OBJS) $(MAIN_OBJ)
 
 %.o : $(START_DIR)/hilicopter_NDI_control_ert_rtw/%.cpp
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+rt_main.o : $(MATLAB_ROOT)/rtw/c/src/common/rt_main.c
+	$(CC) $(CFLAGS) -o "$@" "$<"
 
 
 ###########################################################################

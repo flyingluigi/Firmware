@@ -1,5 +1,5 @@
 /*
- * File: hilicopter_NDI_control_private.h
+ * File: rtmodel.h
  *
  * Code generated for Simulink model 'hilicopter_NDI_control'.
  *
@@ -13,13 +13,15 @@
  * Validation result: Not run
  */
 
-#ifndef RTW_HEADER_hilicopter_NDI_control_private_h_
-#define RTW_HEADER_hilicopter_NDI_control_private_h_
-#include "rtwtypes.h"
+#ifndef RTW_HEADER_rtmodel_h_
+#define RTW_HEADER_rtmodel_h_
+#include "hilicopter_NDI_control.h"
 
-extern real32_T rt_roundf(real32_T u);
-
-#endif                                 /* RTW_HEADER_hilicopter_NDI_control_private_h_ */
+/* Macros generated for backwards compatibility  */
+#ifndef rtmGetStopRequested
+# define rtmGetStopRequested(rtm)      ((void*) 0)
+#endif
+#endif                                 /* RTW_HEADER_rtmodel_h_ */
 
 /*
  * File trailer for generated code.

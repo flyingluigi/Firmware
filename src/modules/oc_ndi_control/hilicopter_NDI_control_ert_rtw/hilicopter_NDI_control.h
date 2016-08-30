@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'hilicopter_NDI_control'.
  *
- * Model version                  : 1.173
+ * Model version                  : 1.176
  * Simulink Coder version         : 8.9 (R2015b) 13-Aug-2015
- * C/C++ source code generated on : Tue Aug 30 08:38:14 2016
+ * C/C++ source code generated on : Tue Aug 30 09:26:35 2016
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex
@@ -24,8 +24,6 @@
 #endif                                 /* hilicopter_NDI_control_COMMON_INCLUDES_ */
 
 #include "hilicopter_NDI_control_types.h"
-#include "rt_nonfinite.h"
-#include "rtGetInf.h"
 
 /* Macros for accessing real-time model data structure */
 #ifndef rtmGetErrorStatus
@@ -38,15 +36,15 @@
 
 /* Block states (auto storage) for system '<Root>' */
 typedef struct {
-  real_T Filter_DSTATE;                /* '<S13>/Filter' */
-  real_T Filter_DSTATE_i;              /* '<S14>/Filter' */
-  real_T Filter_DSTATE_j;              /* '<S15>/Filter' */
   real32_T Integrator_DSTATE;          /* '<S13>/Integrator' */
-  real32_T Integrator_DSTATE_k;        /* '<S14>/Integrator' */
-  real32_T Integrator_DSTATE_l;        /* '<S15>/Integrator' */
+  real32_T Filter_DSTATE;              /* '<S13>/Filter' */
+  real32_T Integrator_DSTATE_l;        /* '<S14>/Integrator' */
+  real32_T Filter_DSTATE_o;            /* '<S14>/Filter' */
+  real32_T Integrator_DSTATE_a;        /* '<S15>/Integrator' */
+  real32_T Filter_DSTATE_oj;           /* '<S15>/Filter' */
   real32_T Integrator_DSTATE_m;        /* '<S19>/Integrator' */
-  real32_T Integrator_DSTATE_km;       /* '<S20>/Integrator' */
-  real32_T Integrator_DSTATE_a;        /* '<S21>/Integrator' */
+  real32_T Integrator_DSTATE_k;        /* '<S20>/Integrator' */
+  real32_T Integrator_DSTATE_ah;       /* '<S21>/Integrator' */
   int8_T Integrator_PrevResetState;    /* '<S19>/Integrator' */
   int8_T Integrator_PrevResetState_h;  /* '<S20>/Integrator' */
   int8_T Integrator_PrevResetState_i;  /* '<S21>/Integrator' */
@@ -82,7 +80,7 @@ typedef struct {
 
 /* Real-time Model Data Structure */
 struct tag_RTM_hilicopter_NDI_contro_T {
-  const char_T * volatile errorStatus;
+  const char_T *errorStatus;
 };
 
 /* Block states (auto storage) */
@@ -133,8 +131,8 @@ extern RT_MODEL_hilicopter_NDI_contr_T *const hilicopter_NDI_control_M;
  * '<S11>'  : 'hilicopter_NDI_control/vel_control'
  * '<S12>'  : 'hilicopter_NDI_control/vel_mode_logic'
  * '<S13>'  : 'hilicopter_NDI_control/rate_control/rate_p'
- * '<S14>'  : 'hilicopter_NDI_control/rate_control/rate_q'
- * '<S15>'  : 'hilicopter_NDI_control/rate_control/rate_r'
+ * '<S14>'  : 'hilicopter_NDI_control/rate_control/rate_p1'
+ * '<S15>'  : 'hilicopter_NDI_control/rate_control/rate_p2'
  * '<S16>'  : 'hilicopter_NDI_control/um2pwm/un2n'
  * '<S17>'  : 'hilicopter_NDI_control/vel_control/Reset integral on arming'
  * '<S18>'  : 'hilicopter_NDI_control/vel_control/Reset integral on mode change'
