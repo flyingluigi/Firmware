@@ -82,8 +82,8 @@ using namespace DriverFramework;
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include "codegen/hilicopter_NDI_control.h"
-#include "codegen/rtwtypes.h"
+#include "hilicopter_NDI_control_ert_rtw/hilicopter_NDI_control.h"
+#include "hilicopter_NDI_control_ert_rtw/rtwtypes.h"
 #ifdef __cplusplus
 }
 #endif
@@ -94,14 +94,29 @@ static int oc_ndi_control_task;			/**< oc_ndi_control of daemon task / thread */
 
 struct {
         param_t roll_p;
+		param_t roll_i;
+		param_t roll_d;
+		param_t roll_N;
         param_t roll_rate_p;
-        param_t roll_rate_ff;
+		param_t roll_rate_i;
+		param_t roll_rate_d;
+		param_t roll_rate_N;
         param_t pitch_p;
+		param_t pitch_i;
+		param_t pitch_d;
+		param_t pitch_N;
         param_t pitch_rate_p;
-        param_t pitch_rate_ff;
+		param_t pitch_rate_i;
+		param_t pitch_rate_d;
+		param_t pitch_rate_N;
         param_t yaw_p;
+		param_t yaw_i;
+		param_t yaw_d;
+		param_t yaw_N;
         param_t yaw_rate_p;
-        param_t yaw_rate_ff;
+		param_t yaw_rate_i;
+		param_t yaw_rate_d;
+		param_t yaw_rate_N;
         param_t model_ixx;
         param_t model_iyy;
         param_t model_izz;
@@ -121,8 +136,13 @@ struct {
 
 struct {
         float att_p[3]; /**< P gain for angular error */
+		float att_i[3];
+		float att_d[3];
+		float att_N[3];
         float rate_p[3];    /**< P gain for angular rate error */
-        float rate_ff[3];   /**< Feedforward gain for desired rates */
+		float rate_i[3]; 
+		float rate_d[3]; 
+		float rate_N[3]; 
         float model_i[3];
         float vel_p[3];
         float vel_i[3];
@@ -214,26 +234,81 @@ int parameters_update(){
 
     /* roll gains */
     param_get(_params_handles.roll_p, &v);
-    _params.att_p[0] = v;
+	if(v==0)
+		_params.att_p[0] = 0;
+	else
+    	_params.att_p[0] = 1/v;
+	
+    param_get(_params_handles.roll_i, &v);
+    _params.att_i[0] = v;
+    param_get(_params_handles.roll_d, &v);
+    _params.att_d[0] = v;
+    param_get(_params_handles.roll_N, &v);
+    _params.att_N[0] = v;
+	
     param_get(_params_handles.roll_rate_p, &v);
-    _params.rate_p[0] = v;
-    param_get(_params_handles.roll_rate_ff, &v);
-    _params.rate_ff[0] = v;
+	if(v==0)
+    	_params.rate_p[0] = 0;
+	else
+		_params.rate_p[0] = 1/v;
+	
+    param_get(_params_handles.roll_rate_i, &v);
+    _params.rate_i[0] = v;	
+    param_get(_params_handles.roll_rate_d, &v);
+    _params.rate_d[0] = v;	
+    param_get(_params_handles.roll_rate_N, &v);
+    _params.rate_N[0] = v;
+	
 
     /* pitch gains */
     param_get(_params_handles.pitch_p, &v);
-    _params.att_p[1] = v;
+	if(v==0)
+    	_params.att_p[1] = 0;
+	else
+		_params.att_p[1] = 1/v;
+	
+    param_get(_params_handles.pitch_i, &v);
+    _params.att_i[1] = v;
+    param_get(_params_handles.pitch_d, &v);
+    _params.att_d[1] = v;
+    param_get(_params_handles.pitch_N, &v);
+    _params.att_N[1] = v;
     param_get(_params_handles.pitch_rate_p, &v);
-    _params.rate_p[1]  = v;
-    param_get(_params_handles.pitch_rate_ff, &v);
-    _params.rate_ff[1]  = v;
+	if(v==0)
+    	_params.rate_p[1]  = 0;
+	else
+		_params.rate_p[1]  = 1/v;
+	
+    param_get(_params_handles.pitch_rate_i, &v);
+    _params.rate_i[1]  = v;
+    param_get(_params_handles.pitch_rate_d, &v);
+    _params.rate_d[1]  = v;
+    param_get(_params_handles.pitch_rate_N, &v);
+    _params.rate_N[1]  = v;
+	
 
     param_get(_params_handles.yaw_p, &v);
-    _params.att_p[2] = v;
+	if(v==0)
+    	_params.att_p[2] = 0;
+	else
+		_params.att_p[2] = 1/v;
+    param_get(_params_handles.yaw_i, &v);
+    _params.att_i[2] = v;
+    param_get(_params_handles.yaw_d, &v);
+    _params.att_d[2] = v;
+    param_get(_params_handles.yaw_N, &v);
+    _params.att_N[2] = v;
     param_get(_params_handles.yaw_rate_p, &v);
-    _params.rate_p[2] = v;
-    param_get(_params_handles.yaw_rate_ff, &v);
-    _params.rate_ff[2] = v;
+	if(v==0)
+    	_params.rate_p[2] = 0;
+	else
+		_params.rate_p[2] = 1/v;
+    param_get(_params_handles.yaw_rate_i, &v);
+    _params.rate_i[2] = v;
+    param_get(_params_handles.yaw_rate_d, &v);
+    _params.rate_d[2] = v;
+    param_get(_params_handles.yaw_rate_N, &v);
+    _params.rate_N[2] = v;
 
     /* velocity gains */
     param_get(_params_handles.vel_x_kp, &v);
@@ -292,7 +367,7 @@ void    parameter_update_poll(){
         struct parameter_update_s param_update;
         orb_copy(ORB_ID(parameter_update), params_sub, &param_update);
         parameters_update();
-        param_save_default();
+        param_save_default(); // this is not save during flight!!
     }
 }
 
@@ -439,16 +514,34 @@ int oc_ndi_control_thread(int argc, char *argv[])
 
     /*Find Parameters*/
     _params_handles.roll_p  =   param_find("NDI_ROLL_P");
+	_params_handles.roll_i  =   param_find("NDI_ROLL_I");
+	_params_handles.roll_d  =   param_find("NDI_ROLL_D");
+	_params_handles.roll_N  =   param_find("NDI_ROLL_N");
+	
     _params_handles.roll_rate_p =   param_find("NDI_ROLLRATE_P");
-    _params_handles.roll_rate_ff    =   param_find("NDI_ROLLRATE_FF");
+	_params_handles.roll_rate_i =   param_find("NDI_ROLLRATE_I");
+	_params_handles.roll_rate_d =   param_find("NDI_ROLLRATE_D");
+	_params_handles.roll_rate_N =   param_find("NDI_ROLLRATE_N");
 
     _params_handles.pitch_p =   param_find("NDI_PITCH_P");
+	_params_handles.pitch_i =   param_find("NDI_PITCH_I");
+	_params_handles.pitch_d =   param_find("NDI_PITCH_D");
+	_params_handles.pitch_N =   param_find("NDI_PITCH_N");
+	
     _params_handles.pitch_rate_p    =   param_find("NDI_PITCHRATE_P");
-    _params_handles.pitch_rate_ff   =   param_find("NDI_PITCHRATE_FF");
+	_params_handles.pitch_rate_i    =   param_find("NDI_PITCHRATE_I");
+	_params_handles.pitch_rate_d    =   param_find("NDI_PITCHRATE_D");
+	_params_handles.pitch_rate_N    =   param_find("NDI_PITCHRATE_N");
 
     _params_handles.yaw_p   =   param_find("NDI_YAW_P");
+	_params_handles.yaw_i   =   param_find("NDI_YAW_I");
+	_params_handles.yaw_d   =   param_find("NDI_YAW_D");
+	_params_handles.yaw_N   =   param_find("NDI_YAW_N");
+	
     _params_handles.yaw_rate_p  =   param_find("NDI_YAWRATE_P");
-    _params_handles.yaw_rate_ff =   param_find("NDI_YAWRATE_FF");
+	_params_handles.yaw_rate_i  =   param_find("NDI_YAWRATE_I");
+	_params_handles.yaw_rate_d  =   param_find("NDI_YAWRATE_D");
+	_params_handles.yaw_rate_N  =   param_find("NDI_YAWRATE_N");
 
     _params_handles.model_ixx   =   param_find("NDI_MODEL_IXX");
     _params_handles.model_iyy   =   param_find("NDI_MODEL_IYY");
@@ -507,19 +600,7 @@ int oc_ndi_control_thread(int argc, char *argv[])
 
         if (fds[0].revents & POLLIN) {
             perf_begin(ndi_loop_perf);
-
-            static uint64_t last_run = 0;
-            float dt = (hrt_absolute_time() - last_run) / 1000000.0f;
-            last_run = hrt_absolute_time();
-
-            /* guard against too small (< 2ms) and too large (> 20ms) dt's */
-            if (dt < 0.002f) {
-                    dt = 0.002f;
-
-            } else if (dt > 0.02f) {
-                    dt = 0.02f;
-            }
-
+           
             /* copy attitude topic */
             orb_copy(ORB_ID(vehicle_attitude), vehicle_attitude_sub, &attitude);
 
@@ -529,33 +610,48 @@ int oc_ndi_control_thread(int argc, char *argv[])
             vehicle_local_position_poll();
             control_state_poll();
 
-            hilicopter_NDI_control_U.param[0] = _params.att_p[0];
-            hilicopter_NDI_control_U.param[1] = _params.att_p[1];
-            hilicopter_NDI_control_U.param[2] = _params.att_p[2];
-            hilicopter_NDI_control_U.param[3] = _params.rate_p[0];
-            hilicopter_NDI_control_U.param[4] = _params.rate_p[1];
-            hilicopter_NDI_control_U.param[5] = _params.rate_p[2];
-            hilicopter_NDI_control_U.param[6] = _params.rate_ff[0];
-            hilicopter_NDI_control_U.param[7] = _params.rate_ff[1];
-            hilicopter_NDI_control_U.param[8] = _params.rate_ff[2];
-            hilicopter_NDI_control_U.param[9] = _params.model_i[0];
-            hilicopter_NDI_control_U.param[10] = _params.model_i[1];
-            hilicopter_NDI_control_U.param[11] = _params.model_i[2];
-            hilicopter_NDI_control_U.param[12] = _params.vel_p[0];
-            hilicopter_NDI_control_U.param[13] = _params.vel_p[1];
-            hilicopter_NDI_control_U.param[14] = _params.vel_p[2];
-            hilicopter_NDI_control_U.param[15] = _params.vel_i[0];
-            hilicopter_NDI_control_U.param[16] = _params.vel_i[1];
-            hilicopter_NDI_control_U.param[17] = _params.vel_i[2];
-            hilicopter_NDI_control_U.param[18] = _params.pos_p[0];
-            hilicopter_NDI_control_U.param[19] = _params.pos_p[1];
-            hilicopter_NDI_control_U.param[20] = _params.pos_p[2];
-            hilicopter_NDI_control_U.param[21] = _params.max_val[0];
-            hilicopter_NDI_control_U.param[22] = _params.max_val[1];
-            hilicopter_NDI_control_U.param[23] = _params.max_val[2];
-
-
-
+            hilicopter_NDI_control_U.param[0] = _params.rate_p[0];
+            hilicopter_NDI_control_U.param[1] = _params.rate_p[1];
+            hilicopter_NDI_control_U.param[2] = _params.rate_p[2];
+            hilicopter_NDI_control_U.param[3] = _params.rate_i[0];
+            hilicopter_NDI_control_U.param[4] = _params.rate_i[1];
+            hilicopter_NDI_control_U.param[5] = _params.rate_i[2];
+            hilicopter_NDI_control_U.param[6] = _params.rate_d[0];
+            hilicopter_NDI_control_U.param[7] = _params.rate_d[1];
+            hilicopter_NDI_control_U.param[8] = _params.rate_d[2];
+            hilicopter_NDI_control_U.param[9] = _params.rate_N[0];
+            hilicopter_NDI_control_U.param[10] = _params.rate_N[1];
+            hilicopter_NDI_control_U.param[11] = _params.rate_N[2];
+			
+            hilicopter_NDI_control_U.param[12] = _params.att_p[0];
+            hilicopter_NDI_control_U.param[13] = _params.att_p[1];
+            hilicopter_NDI_control_U.param[14] = _params.att_p[2];
+            hilicopter_NDI_control_U.param[15] = _params.att_i[0];
+            hilicopter_NDI_control_U.param[16] = _params.att_i[1];
+            hilicopter_NDI_control_U.param[17] = _params.att_i[2];
+            hilicopter_NDI_control_U.param[18] = _params.att_d[0];
+            hilicopter_NDI_control_U.param[19] = _params.att_d[1];
+            hilicopter_NDI_control_U.param[20] = _params.att_d[2];
+            hilicopter_NDI_control_U.param[21] = _params.att_N[0];
+            hilicopter_NDI_control_U.param[22] = _params.att_N[1];
+            hilicopter_NDI_control_U.param[23] = _params.att_N[2];
+			
+            hilicopter_NDI_control_U.param[24] = _params.model_i[0];
+            hilicopter_NDI_control_U.param[25] = _params.model_i[1];
+            hilicopter_NDI_control_U.param[26] = _params.model_i[2];
+            hilicopter_NDI_control_U.param[27] = _params.vel_p[0];
+            hilicopter_NDI_control_U.param[28] = _params.vel_p[1];
+            hilicopter_NDI_control_U.param[29] = _params.vel_p[2];
+            hilicopter_NDI_control_U.param[30] = _params.vel_i[0];
+            hilicopter_NDI_control_U.param[31] = _params.vel_i[1];
+            hilicopter_NDI_control_U.param[32] = _params.vel_i[2];
+            hilicopter_NDI_control_U.param[33] = _params.pos_p[0];
+            hilicopter_NDI_control_U.param[34] = _params.pos_p[1];
+            hilicopter_NDI_control_U.param[35] = _params.pos_p[2];
+            hilicopter_NDI_control_U.param[36] = _params.max_val[0];
+            hilicopter_NDI_control_U.param[37] = _params.max_val[1];
+            hilicopter_NDI_control_U.param[38] = _params.max_val[2];
+			
             //Quaternion _q = control_state.q;
             //Vector<3> euler = _q.to_euler();
 
@@ -623,7 +719,6 @@ int oc_ndi_control_thread(int argc, char *argv[])
                 h_rgbleds.ioctl(RGBLED_SET_COLOR, RGBLED_COLOR_GREEN);
             }
             orb_publish(ORB_ID(simulink_app_pwm), simulink_app_pwm_pub, &pwm_out);
-
 
             /* publish debug controls */
             ndi_debug.timestamp = hrt_absolute_time();

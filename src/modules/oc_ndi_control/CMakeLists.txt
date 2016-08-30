@@ -40,8 +40,11 @@ px4_add_module(
 		-Wno-unused-variable
 	SRCS
 		oc_ndi_control_main.cpp
-		codegen/hilicopter_NDI_control.c
-		codegen/hilicopter_NDI_control_data.c
+		hilicopter_NDI_control_ert_rtw/hilicopter_NDI_control.c
+		hilicopter_NDI_control_ert_rtw/hilicopter_NDI_control_data.c
+		hilicopter_NDI_control_ert_rtw/rt_nonfinite.c
+		hilicopter_NDI_control_ert_rtw/rtGetInf.c
+		hilicopter_NDI_control_ert_rtw/rtGetNaN.c
 	DEPENDS
 		platforms__common
 	)

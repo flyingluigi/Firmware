@@ -39,9 +39,9 @@
  */
 
 /**
- * Roll P gain
+ * Roll PID gain
  *
- * Roll proportional gain
+ * Roll PID gains
  *
  *
  * @min 0.00
@@ -50,10 +50,13 @@
  * @increment 0.01
  * @group Octocopter NDI Control
  */
-PARAM_DEFINE_FLOAT(NDI_ROLL_P, 0.5f);
+PARAM_DEFINE_FLOAT(NDI_ROLL_P, 0.4f);
+PARAM_DEFINE_FLOAT(NDI_ROLL_I, 0.0f);
+PARAM_DEFINE_FLOAT(NDI_ROLL_D, 0.0f);
+PARAM_DEFINE_FLOAT(NDI_ROLL_N, 50.0f);
 
 /**
- * Rollrate P gain
+ * Rollrate PID gains
  *
  * Rollrate proportional gain
  *
@@ -64,21 +67,12 @@ PARAM_DEFINE_FLOAT(NDI_ROLL_P, 0.5f);
  * @increment 0.01
  * @group Octocopter NDI Control
  */
-PARAM_DEFINE_FLOAT(NDI_ROLLRATE_P, 3.0f);
+PARAM_DEFINE_FLOAT(NDI_ROLLRATE_P, 0.125f);
+PARAM_DEFINE_FLOAT(NDI_ROLLRATE_I, 0.0f);
+PARAM_DEFINE_FLOAT(NDI_ROLLRATE_D, 0.0f);
+PARAM_DEFINE_FLOAT(NDI_ROLLRATE_N, 50.0f);
 
-/**
- * Roll Feedforward P gain
- *
- * Roll Feedforward proportional gain
- *
- *
- * @min 0.00
- * @max 15
- * @decimal 2
- * @increment 0.01
- * @group Octocopter NDI Control
- */
-PARAM_DEFINE_FLOAT(NDI_ROLLRATE_FF, 0.0f);
+
 
 /**
  * Pitch P gain
@@ -92,8 +86,10 @@ PARAM_DEFINE_FLOAT(NDI_ROLLRATE_FF, 0.0f);
  * @increment 0.01
  * @group Octocopter NDI Control
  */
-PARAM_DEFINE_FLOAT(NDI_PITCH_P, 0.5f);
-
+PARAM_DEFINE_FLOAT(NDI_PITCH_P, 0.4f);
+PARAM_DEFINE_FLOAT(NDI_PITCH_I, 0.0f);
+PARAM_DEFINE_FLOAT(NDI_PITCH_D, 0.0f);
+PARAM_DEFINE_FLOAT(NDI_PITCH_N, 50.0f);
 /**
  * Pitchrate P gain
  *
@@ -106,26 +102,17 @@ PARAM_DEFINE_FLOAT(NDI_PITCH_P, 0.5f);
  * @increment 0.01
  * @group Octocopter NDI Control
  */
-PARAM_DEFINE_FLOAT(NDI_PITCHRATE_P, 3.0f);
+PARAM_DEFINE_FLOAT(NDI_PITCHRATE_P, 0.125f);
+PARAM_DEFINE_FLOAT(NDI_PITCHRATE_I, 0.0f);
+PARAM_DEFINE_FLOAT(NDI_PITCHRATE_D, 0.0f);
+PARAM_DEFINE_FLOAT(NDI_PITCHRATE_N, 50.0f);
+
+
 
 /**
- * Pitch Feedforward P gain
+ * Yaw PID gain
  *
- * Pitch Feedforward proportional gain
- *
- *
- * @min 0.00
- * @max 15
- * @decimal 2
- * @increment 0.01
- * @group Octocopter NDI Control
- */
-PARAM_DEFINE_FLOAT(NDI_PITCHRATE_FF, 0.0f);
-
-/**
- * Yaw P gain
- *
- * Yaw proportional gain
+ * Yaw pid gain
  *
  *
  * @min 0.00
@@ -135,11 +122,14 @@ PARAM_DEFINE_FLOAT(NDI_PITCHRATE_FF, 0.0f);
  * @group Octocopter NDI Control
  */
 PARAM_DEFINE_FLOAT(NDI_YAW_P, 0.5f);
+PARAM_DEFINE_FLOAT(NDI_YAW_I, 0.0f);
+PARAM_DEFINE_FLOAT(NDI_YAW_D, 0.0f);
+PARAM_DEFINE_FLOAT(NDI_YAW_N, 50.0f);
 
 /**
- * Yawrate P gain
+ * Yawrate PID gain
  *
- * Yawrate proportional gain
+ * Yawrate pid gain
  *
  *
  * @min 0.00
@@ -148,21 +138,10 @@ PARAM_DEFINE_FLOAT(NDI_YAW_P, 0.5f);
  * @increment 0.01
  * @group Octocopter NDI Control
  */
-PARAM_DEFINE_FLOAT(NDI_YAWRATE_P, 3.0f);
-
-/**
- * Yaw Feedforward P gain
- *
- * Yaw Feedforward proportional gain
- *
- *
- * @min 0.00
- * @max 1
- * @decimal 2
- * @increment 0.01
- * @group Octocopter NDI Control
- */
-PARAM_DEFINE_FLOAT(NDI_YAWRATE_FF, 0.2f);
+PARAM_DEFINE_FLOAT(NDI_YAWRATE_P, 0.25f);
+PARAM_DEFINE_FLOAT(NDI_YAWRATE_I, 0.0f);
+PARAM_DEFINE_FLOAT(NDI_YAWRATE_D, 0.0f);
+PARAM_DEFINE_FLOAT(NDI_YAWRATE_N, 50.0f);
 
 
 /**
