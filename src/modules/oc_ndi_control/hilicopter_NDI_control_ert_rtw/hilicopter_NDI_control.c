@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'hilicopter_NDI_control'.
  *
- * Model version                  : 1.176
+ * Model version                  : 1.182
  * Simulink Coder version         : 8.9 (R2015b) 13-Aug-2015
- * C/C++ source code generated on : Tue Aug 30 09:26:35 2016
+ * C/C++ source code generated on : Tue Aug 30 17:16:18 2016
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex
@@ -154,7 +154,6 @@ real32_T rt_roundf(real32_T u)
 /* Model step function */
 void hilicopter_NDI_control_step(void)
 {
-  real32_T K_euler[9];
   real32_T sphi;
   real32_T cphi;
   real32_T sthe;
@@ -163,6 +162,7 @@ void hilicopter_NDI_control_step(void)
   real32_T cpsi;
   real32_T dhdx_fx[72];
   real_T xdot_s[12];
+  real32_T Ib[9];
   real32_T Ibi[9];
   real32_T b_sphi;
   real32_T b_cphi;
@@ -184,29 +184,34 @@ void hilicopter_NDI_control_step(void)
   real32_T absxk;
   real32_T t;
   real32_T y[8];
-  real32_T rtb_omega_ref[3];
+  real32_T rtb_euler_ref[3];
   real32_T rtb_Add;
-  real32_T rtb_Add2;
-  real32_T rtb_Add1;
+  real32_T rtb_Sum_hr;
+  real32_T rtb_Add_p;
   real32_T rtb_NOut;
-  real32_T rtb_Product;
-  real32_T rtb_NOut_m;
-  real32_T rtb_Sum_d;
-  real32_T rtb_Add3;
+  real32_T rtb_Sum_kg;
+  real32_T rtb_Add1;
+  real32_T rtb_NOut_p;
+  real32_T rtb_Add1_d;
   real32_T rtb_NOut_a;
+  real32_T rtb_Add2;
+  real32_T rtb_Product;
+  real32_T rtb_NOut_od;
+  real32_T rtb_Sum_a;
+  real32_T rtb_Add3;
+  real32_T rtb_NOut_k;
   uint8_T rtb_mode;
   boolean_T rtb_Compare;
   real32_T rtb_Saturate;
   real32_T rtb_Add4;
-  real32_T rtb_Sum_m;
+  real32_T rtb_Sum_l;
   real32_T rtb_Saturate_n;
   real32_T rtb_Add5;
   boolean_T rtb_Compare_f;
-  real32_T rtb_Sum_j;
+  real32_T rtb_Sum_g;
   real32_T rtb_Saturate_a;
   real32_T rtb_um_com[6];
   real32_T rtb_TmpSignalConversionAtSFunct[3];
-  real32_T rtb_euler_ref[3];
   real32_T rtb_um[6];
   int32_T i;
   real32_T cthe_0[36];
@@ -223,7 +228,7 @@ void hilicopter_NDI_control_step(void)
   real32_T rtb_euler_ref_0[6];
   real32_T b_k_0[24];
   real32_T km_0[24];
-  real32_T K_euler_0[24];
+  real32_T Ib_0[24];
   real32_T b_k_1[96];
   real32_T b_k_2[96];
   real32_T b_k_3[72];
@@ -261,47 +266,20 @@ void hilicopter_NDI_control_step(void)
     /* '<S4>:1:7' */
     rtb_euler_ref[0] = 0.0F;
     rtb_euler_ref[1] = 0.0F;
-    rtb_euler_ref[2] = 0.0F;
   } else {
     /* '<S4>:1:9' */
     rtb_euler_ref[0] = hilicopter_NDI_control_U.param[34] *
       hilicopter_NDI_control_U.pwm_in[0];
     rtb_euler_ref[1] = hilicopter_NDI_control_U.param[34] *
       hilicopter_NDI_control_U.pwm_in[1];
-    rtb_euler_ref[2] = hilicopter_NDI_control_U.param[34] * 0.0F;
   }
 
   /* End of MATLAB Function: '<Root>/mode_logic' */
 
-  /* MATLAB Function: '<Root>/att_control' incorporates:
-   *  Inport: '<Root>/param'
+  /* Sum: '<S2>/Add' incorporates:
    *  Inport: '<Root>/state'
    */
-  /* MATLAB Function 'att_control': '<S2>:1' */
-  /* '<S2>:1:4' */
-  for (i = 0; i < 9; i++) {
-    K_euler[i] = 0.0F;
-  }
-
-  /* '<S2>:1:5' */
-  /* '<S2>:1:6' */
-  K_euler[0] = hilicopter_NDI_control_U.param[12];
-  rtb_Add = rtb_euler_ref[0] - hilicopter_NDI_control_U.state[9];
-  K_euler[4] = hilicopter_NDI_control_U.param[13];
-  rtb_NOut = rtb_euler_ref[1] - hilicopter_NDI_control_U.state[10];
-  K_euler[8] = hilicopter_NDI_control_U.param[14];
-  rtb_Add1 = rtb_euler_ref[2] - hilicopter_NDI_control_U.state[11];
-  for (i = 0; i < 3; i++) {
-    rtb_omega_ref[i] = K_euler[i + 6] * rtb_Add1 + (K_euler[i + 3] * rtb_NOut +
-      K_euler[i] * rtb_Add);
-  }
-
-  /* End of MATLAB Function: '<Root>/att_control' */
-
-  /* Sum: '<S5>/Add' incorporates:
-   *  Inport: '<Root>/state'
-   */
-  rtb_Add = rtb_omega_ref[0] - hilicopter_NDI_control_U.state[6];
+  rtb_Add = hilicopter_NDI_control_U.state[9] - rtb_euler_ref[0];
 
   /* Product: '<S13>/NOut' incorporates:
    *  DiscreteIntegrator: '<S13>/Filter'
@@ -309,14 +287,37 @@ void hilicopter_NDI_control_step(void)
    *  Product: '<S13>/DOut'
    *  Sum: '<S13>/SumD'
    */
-  rtb_NOut = (rtb_Add * hilicopter_NDI_control_U.param[6] -
+  rtb_NOut = (rtb_Add * hilicopter_NDI_control_U.param[18] -
               hilicopter_NDI_control_DW.Filter_DSTATE) *
-    hilicopter_NDI_control_U.param[9];
+    hilicopter_NDI_control_U.param[21];
 
-  /* Sum: '<S5>/Add1' incorporates:
+  /* Sum: '<S13>/Sum' incorporates:
+   *  DiscreteIntegrator: '<S13>/Integrator'
+   *  Inport: '<Root>/param'
+   *  Product: '<S13>/POut'
+   */
+  rtb_Sum_hr = (rtb_Add * hilicopter_NDI_control_U.param[12] +
+                hilicopter_NDI_control_DW.Integrator_DSTATE) + rtb_NOut;
+
+  /* Sum: '<S5>/Add' incorporates:
    *  Inport: '<Root>/state'
    */
-  rtb_Add1 = rtb_omega_ref[1] - hilicopter_NDI_control_U.state[7];
+  rtb_Add_p = rtb_Sum_hr - hilicopter_NDI_control_U.state[6];
+
+  /* Product: '<S16>/NOut' incorporates:
+   *  DiscreteIntegrator: '<S16>/Filter'
+   *  Inport: '<Root>/param'
+   *  Product: '<S16>/DOut'
+   *  Sum: '<S16>/SumD'
+   */
+  rtb_NOut_p = (rtb_Add_p * hilicopter_NDI_control_U.param[6] -
+                hilicopter_NDI_control_DW.Filter_DSTATE_a) *
+    hilicopter_NDI_control_U.param[9];
+
+  /* Sum: '<S2>/Add1' incorporates:
+   *  Inport: '<Root>/state'
+   */
+  rtb_Add1 = hilicopter_NDI_control_U.state[10] - rtb_euler_ref[1];
 
   /* Product: '<S14>/NOut' incorporates:
    *  DiscreteIntegrator: '<S14>/Filter'
@@ -324,8 +325,31 @@ void hilicopter_NDI_control_step(void)
    *  Product: '<S14>/DOut'
    *  Sum: '<S14>/SumD'
    */
-  rtb_NOut_m = (rtb_Add1 * hilicopter_NDI_control_U.param[7] -
-                hilicopter_NDI_control_DW.Filter_DSTATE_o) *
+  rtb_NOut_a = (rtb_Add1 * hilicopter_NDI_control_U.param[19] -
+                hilicopter_NDI_control_DW.Filter_DSTATE_an) *
+    hilicopter_NDI_control_U.param[22];
+
+  /* Sum: '<S14>/Sum' incorporates:
+   *  DiscreteIntegrator: '<S14>/Integrator'
+   *  Inport: '<Root>/param'
+   *  Product: '<S14>/POut'
+   */
+  rtb_Sum_kg = (rtb_Add1 * hilicopter_NDI_control_U.param[13] +
+                hilicopter_NDI_control_DW.Integrator_DSTATE_n0) + rtb_NOut_a;
+
+  /* Sum: '<S5>/Add1' incorporates:
+   *  Inport: '<Root>/state'
+   */
+  rtb_Add1_d = rtb_Sum_kg - hilicopter_NDI_control_U.state[7];
+
+  /* Product: '<S17>/NOut' incorporates:
+   *  DiscreteIntegrator: '<S17>/Filter'
+   *  Inport: '<Root>/param'
+   *  Product: '<S17>/DOut'
+   *  Sum: '<S17>/SumD'
+   */
+  rtb_NOut_od = (rtb_Add1_d * hilicopter_NDI_control_U.param[7] -
+                 hilicopter_NDI_control_DW.Filter_DSTATE_o) *
     hilicopter_NDI_control_U.param[10];
 
   /* Product: '<Root>/Product' incorporates:
@@ -340,13 +364,13 @@ void hilicopter_NDI_control_step(void)
    */
   rtb_Add2 = rtb_Product - hilicopter_NDI_control_U.state[8];
 
-  /* Product: '<S15>/NOut' incorporates:
-   *  DiscreteIntegrator: '<S15>/Filter'
+  /* Product: '<S18>/NOut' incorporates:
+   *  DiscreteIntegrator: '<S18>/Filter'
    *  Inport: '<Root>/param'
-   *  Product: '<S15>/DOut'
-   *  Sum: '<S15>/SumD'
+   *  Product: '<S18>/DOut'
+   *  Sum: '<S18>/SumD'
    */
-  rtb_NOut_a = (rtb_Add2 * hilicopter_NDI_control_U.param[8] -
+  rtb_NOut_k = (rtb_Add2 * hilicopter_NDI_control_U.param[8] -
                 hilicopter_NDI_control_DW.Filter_DSTATE_oj) *
     hilicopter_NDI_control_U.param[11];
 
@@ -357,13 +381,13 @@ void hilicopter_NDI_control_step(void)
   /* Rotate commanded velocities according to heading */
   /* '<S6>:1:4' */
   /* '<S6>:1:8' */
-  Ibi[0] = (real32_T)cos(hilicopter_NDI_control_U.state[11]);
-  Ibi[3] = -(real32_T)sin(hilicopter_NDI_control_U.state[11]);
-  Ibi[6] = 0.0F;
-  Ibi[1] = (real32_T)sin(hilicopter_NDI_control_U.state[11]);
-  Ibi[4] = (real32_T)cos(hilicopter_NDI_control_U.state[11]);
-  Ibi[7] = 0.0F;
-  Ibi[2] = 0.0F;
+  Ib[0] = (real32_T)cos(hilicopter_NDI_control_U.state[11]);
+  Ib[3] = -(real32_T)sin(hilicopter_NDI_control_U.state[11]);
+  Ib[6] = 0.0F;
+  Ib[1] = (real32_T)sin(hilicopter_NDI_control_U.state[11]);
+  Ib[4] = (real32_T)cos(hilicopter_NDI_control_U.state[11]);
+  Ib[7] = 0.0F;
+  Ib[2] = 0.0F;
 
   /* Product: '<Root>/Product2' incorporates:
    *  Inport: '<Root>/param'
@@ -373,7 +397,7 @@ void hilicopter_NDI_control_step(void)
     [35];
 
   /* MATLAB Function: '<Root>/rotate_u' */
-  Ibi[5] = 0.0F;
+  Ib[5] = 0.0F;
 
   /* Product: '<Root>/Product2' incorporates:
    *  Inport: '<Root>/param'
@@ -383,7 +407,7 @@ void hilicopter_NDI_control_step(void)
     [35];
 
   /* MATLAB Function: '<Root>/rotate_u' */
-  Ibi[8] = 1.0F;
+  Ib[8] = 1.0F;
 
   /* Product: '<Root>/Product2' incorporates:
    *  Fcn: '<S7>/Fcn'
@@ -395,8 +419,7 @@ void hilicopter_NDI_control_step(void)
 
   /* MATLAB Function: '<Root>/rotate_u' */
   for (i = 0; i < 3; i++) {
-    rtb_euler_ref[i] = Ibi[i + 6] * b_cpsi + (Ibi[i + 3] * b_sthe + Ibi[i] *
-      b_spsi);
+    rtb_euler_ref[i] = Ib[i + 6] * b_cpsi + (Ib[i + 3] * b_sthe + Ib[i] * b_spsi);
   }
 
   /* Sum: '<S11>/Add3' incorporates:
@@ -404,65 +427,65 @@ void hilicopter_NDI_control_step(void)
    */
   rtb_Add3 = rtb_euler_ref[0] - hilicopter_NDI_control_U.state[12];
 
-  /* RelationalOperator: '<S18>/Compare' incorporates:
-   *  Constant: '<S18>/Constant'
+  /* RelationalOperator: '<S21>/Compare' incorporates:
+   *  Constant: '<S21>/Constant'
    */
   rtb_Compare = (rtb_mode == 2);
 
-  /* DiscreteIntegrator: '<S19>/Integrator' */
+  /* DiscreteIntegrator: '<S22>/Integrator' */
   if (rtb_Compare && (hilicopter_NDI_control_DW.Integrator_PrevResetState <= 0))
   {
     hilicopter_NDI_control_DW.Integrator_DSTATE_m = 0.0F;
   }
 
-  /* Sum: '<S19>/Sum' incorporates:
-   *  DiscreteIntegrator: '<S19>/Integrator'
+  /* Sum: '<S22>/Sum' incorporates:
+   *  DiscreteIntegrator: '<S22>/Integrator'
    *  Inport: '<Root>/param'
-   *  Product: '<S19>/POut'
+   *  Product: '<S22>/POut'
    */
-  rtb_Sum_d = rtb_Add3 * hilicopter_NDI_control_U.param[24] +
+  rtb_Sum_a = rtb_Add3 * hilicopter_NDI_control_U.param[24] +
     hilicopter_NDI_control_DW.Integrator_DSTATE_m;
 
-  /* Saturate: '<S19>/Saturate' */
-  if (rtb_Sum_d > 5.0F) {
+  /* Saturate: '<S22>/Saturate' */
+  if (rtb_Sum_a > 5.0F) {
     rtb_Saturate = 5.0F;
-  } else if (rtb_Sum_d < -5.0F) {
+  } else if (rtb_Sum_a < -5.0F) {
     rtb_Saturate = -5.0F;
   } else {
-    rtb_Saturate = rtb_Sum_d;
+    rtb_Saturate = rtb_Sum_a;
   }
 
-  /* End of Saturate: '<S19>/Saturate' */
+  /* End of Saturate: '<S22>/Saturate' */
 
   /* Sum: '<S11>/Add4' incorporates:
    *  Inport: '<Root>/state'
    */
   rtb_Add4 = rtb_euler_ref[1] - hilicopter_NDI_control_U.state[13];
 
-  /* DiscreteIntegrator: '<S20>/Integrator' */
+  /* DiscreteIntegrator: '<S23>/Integrator' */
   if (rtb_Compare && (hilicopter_NDI_control_DW.Integrator_PrevResetState_h <= 0))
   {
     hilicopter_NDI_control_DW.Integrator_DSTATE_k = 0.0F;
   }
 
-  /* Sum: '<S20>/Sum' incorporates:
-   *  DiscreteIntegrator: '<S20>/Integrator'
+  /* Sum: '<S23>/Sum' incorporates:
+   *  DiscreteIntegrator: '<S23>/Integrator'
    *  Inport: '<Root>/param'
-   *  Product: '<S20>/POut'
+   *  Product: '<S23>/POut'
    */
-  rtb_Sum_m = rtb_Add4 * hilicopter_NDI_control_U.param[25] +
+  rtb_Sum_l = rtb_Add4 * hilicopter_NDI_control_U.param[25] +
     hilicopter_NDI_control_DW.Integrator_DSTATE_k;
 
-  /* Saturate: '<S20>/Saturate' */
-  if (rtb_Sum_m > 5.0F) {
+  /* Saturate: '<S23>/Saturate' */
+  if (rtb_Sum_l > 5.0F) {
     rtb_Saturate_n = 5.0F;
-  } else if (rtb_Sum_m < -5.0F) {
+  } else if (rtb_Sum_l < -5.0F) {
     rtb_Saturate_n = -5.0F;
   } else {
-    rtb_Saturate_n = rtb_Sum_m;
+    rtb_Saturate_n = rtb_Sum_l;
   }
 
-  /* End of Saturate: '<S20>/Saturate' */
+  /* End of Saturate: '<S23>/Saturate' */
 
   /* Sum: '<S11>/Add5' incorporates:
    *  Gain: '<S11>/Gain'
@@ -470,36 +493,36 @@ void hilicopter_NDI_control_step(void)
    */
   rtb_Add5 = -rtb_euler_ref[2] - hilicopter_NDI_control_U.state[14];
 
-  /* RelationalOperator: '<S17>/Compare' incorporates:
-   *  Constant: '<S17>/Constant'
+  /* RelationalOperator: '<S20>/Compare' incorporates:
+   *  Constant: '<S20>/Constant'
    *  Inport: '<Root>/pwm_in'
    */
   rtb_Compare_f = (hilicopter_NDI_control_U.pwm_in[4] >= 0.5F);
 
-  /* DiscreteIntegrator: '<S21>/Integrator' */
+  /* DiscreteIntegrator: '<S24>/Integrator' */
   if (rtb_Compare_f && (hilicopter_NDI_control_DW.Integrator_PrevResetState_i <=
                         0)) {
     hilicopter_NDI_control_DW.Integrator_DSTATE_ah = 35.0F;
   }
 
-  /* Sum: '<S21>/Sum' incorporates:
-   *  DiscreteIntegrator: '<S21>/Integrator'
+  /* Sum: '<S24>/Sum' incorporates:
+   *  DiscreteIntegrator: '<S24>/Integrator'
    *  Inport: '<Root>/param'
-   *  Product: '<S21>/POut'
+   *  Product: '<S24>/POut'
    */
-  rtb_Sum_j = rtb_Add5 * hilicopter_NDI_control_U.param[26] +
+  rtb_Sum_g = rtb_Add5 * hilicopter_NDI_control_U.param[26] +
     hilicopter_NDI_control_DW.Integrator_DSTATE_ah;
 
-  /* Saturate: '<S21>/Saturate' */
-  if (rtb_Sum_j > 35.0F) {
+  /* Saturate: '<S24>/Saturate' */
+  if (rtb_Sum_g > 35.0F) {
     rtb_Saturate_a = 35.0F;
-  } else if (rtb_Sum_j < -35.0F) {
+  } else if (rtb_Sum_g < -35.0F) {
     rtb_Saturate_a = -35.0F;
   } else {
-    rtb_Saturate_a = rtb_Sum_j;
+    rtb_Saturate_a = rtb_Sum_g;
   }
 
-  /* End of Saturate: '<S21>/Saturate' */
+  /* End of Saturate: '<S24>/Saturate' */
 
   /* MATLAB Function: '<Root>/vel_mode_logic' incorporates:
    *  SignalConversion: '<S12>/TmpSignal ConversionAt SFunction Inport1'
@@ -524,17 +547,17 @@ void hilicopter_NDI_control_step(void)
   /* End of MATLAB Function: '<Root>/vel_mode_logic' */
 
   /* MATLAB Function: '<Root>/NDI_control_law' incorporates:
-   *  DiscreteIntegrator: '<S13>/Integrator'
-   *  DiscreteIntegrator: '<S14>/Integrator'
-   *  DiscreteIntegrator: '<S15>/Integrator'
+   *  DiscreteIntegrator: '<S16>/Integrator'
+   *  DiscreteIntegrator: '<S17>/Integrator'
+   *  DiscreteIntegrator: '<S18>/Integrator'
    *  Inport: '<Root>/param'
    *  Inport: '<Root>/state'
-   *  Product: '<S13>/POut'
-   *  Product: '<S14>/POut'
-   *  Product: '<S15>/POut'
-   *  Sum: '<S13>/Sum'
-   *  Sum: '<S14>/Sum'
-   *  Sum: '<S15>/Sum'
+   *  Product: '<S16>/POut'
+   *  Product: '<S17>/POut'
+   *  Product: '<S18>/POut'
+   *  Sum: '<S16>/Sum'
+   *  Sum: '<S17>/Sum'
+   *  Sum: '<S18>/Sum'
    */
   /* MATLAB Function 'NDI_control_law': '<S1>:1' */
   /*  NDI controller for p,q,r and un,vn,wn of OC model */
@@ -710,13 +733,13 @@ void hilicopter_NDI_control_step(void)
   /*  Kinematic velocity in body frame */
   /*  Angular velocity of the body in body frame */
   for (i = 0; i < 9; i++) {
-    K_euler[i] = 0.0F;
+    Ib[i] = 0.0F;
     Ibi[i] = 0.0F;
   }
 
-  K_euler[0] = hilicopter_NDI_control_U.param[36];
-  K_euler[4] = hilicopter_NDI_control_U.param[37];
-  K_euler[8] = hilicopter_NDI_control_U.param[38];
+  Ib[0] = hilicopter_NDI_control_U.param[36];
+  Ib[4] = hilicopter_NDI_control_U.param[37];
+  Ib[8] = hilicopter_NDI_control_U.param[38];
   Ibi[0] = 1.0F / hilicopter_NDI_control_U.param[36];
   Ibi[4] = 1.0F / hilicopter_NDI_control_U.param[37];
   Ibi[8] = 1.0F / hilicopter_NDI_control_U.param[38];
@@ -813,9 +836,9 @@ void hilicopter_NDI_control_step(void)
   /*  Moment (drag, gravity and inertia) */
   for (i = 0; i < 3; i++) {
     tmp[i] = hilicopter_NDI_control_U.state[6 + i];
-    rtb_TmpSignalConversionAtSFunct[i] = K_euler[i + 6] *
-      hilicopter_NDI_control_U.state[8] + (K_euler[i + 3] *
-      hilicopter_NDI_control_U.state[7] + K_euler[i] *
+    rtb_TmpSignalConversionAtSFunct[i] = Ib[i + 6] *
+      hilicopter_NDI_control_U.state[8] + (Ib[i + 3] *
+      hilicopter_NDI_control_U.state[7] + Ib[i] *
       hilicopter_NDI_control_U.state[6]);
   }
 
@@ -906,7 +929,7 @@ void hilicopter_NDI_control_step(void)
       hilicopter_NDI_control_U.state[8];
     xdot_s[9 + i] = tmp_1[i];
     for (j = 0; j < 8; j++) {
-      K_euler_0[i + 3 * j] = tmp_2[i];
+      Ib_0[i + 3 * j] = tmp_2[i];
       tmp_4[i + 3 * j] = 0.0F;
       tmp_4[i + 3 * j] += (real32_T)hilicopter_NDI_control_ConstP.pooled1.R[3 *
         j] * tmp_3[i];
@@ -923,9 +946,9 @@ void hilicopter_NDI_control_step(void)
   /* Fzb */
   /*  Matrix for moments:  Mrotb = Mmat * un;  */
   for (i = 0; i < 8; i++) {
-    tmp_5[3 * i] = K_euler_0[3 * i] + tmp_4[3 * i];
-    tmp_5[1 + 3 * i] = K_euler_0[3 * i + 1] + tmp_4[3 * i + 1];
-    tmp_5[2 + 3 * i] = K_euler_0[3 * i + 2] + tmp_4[3 * i + 2];
+    tmp_5[3 * i] = Ib_0[3 * i] + tmp_4[3 * i];
+    tmp_5[1 + 3 * i] = Ib_0[3 * i + 1] + tmp_4[3 * i + 1];
+    tmp_5[2 + 3 * i] = Ib_0[3 * i + 2] + tmp_4[3 * i + 2];
     b_sphi = (tmp_5[3 * i + 2] * 0.05F + 1.0F) * 1.28E-7F;
     km[i] = 0.0383F * b_sphi;
     kL[i] = 0.45F * b_sphi;
@@ -941,12 +964,12 @@ void hilicopter_NDI_control_step(void)
   /*  [x;y;z] dot             */
   /*  [p;q;r] dot */
   for (i = 0; i < 9; i++) {
-    K_euler[i] = 0.0F;
+    Ib[i] = 0.0F;
   }
 
-  K_euler[0] = 1.0F / hilicopter_NDI_control_U.param[36];
-  K_euler[4] = 1.0F / hilicopter_NDI_control_U.param[37];
-  K_euler[8] = 1.0F / hilicopter_NDI_control_U.param[38];
+  Ib[0] = 1.0F / hilicopter_NDI_control_U.param[36];
+  Ib[4] = 1.0F / hilicopter_NDI_control_U.param[37];
+  Ib[8] = 1.0F / hilicopter_NDI_control_U.param[38];
 
   /*  [phi;theta;psi] dot */
   /*  Normalization of gmatrix  */
@@ -958,14 +981,15 @@ void hilicopter_NDI_control_step(void)
   rtb_euler_ref_0[0] = rtb_euler_ref[0];
   rtb_euler_ref_0[1] = rtb_euler_ref[1];
   rtb_euler_ref_0[2] = rtb_euler_ref[2];
-  rtb_euler_ref_0[3] = (rtb_Add * hilicopter_NDI_control_U.param[0] +
-                        hilicopter_NDI_control_DW.Integrator_DSTATE) + rtb_NOut;
-  rtb_euler_ref_0[4] = (rtb_Add1 * hilicopter_NDI_control_U.param[1] +
+  rtb_euler_ref_0[3] = (rtb_Add_p * hilicopter_NDI_control_U.param[0] +
+                        hilicopter_NDI_control_DW.Integrator_DSTATE_n) +
+    rtb_NOut_p;
+  rtb_euler_ref_0[4] = (rtb_Add1_d * hilicopter_NDI_control_U.param[1] +
                         hilicopter_NDI_control_DW.Integrator_DSTATE_l) +
-    rtb_NOut_m;
+    rtb_NOut_od;
   rtb_euler_ref_0[5] = (rtb_Add2 * hilicopter_NDI_control_U.param[2] +
                         hilicopter_NDI_control_DW.Integrator_DSTATE_a) +
-    rtb_NOut_a;
+    rtb_NOut_k;
   for (i = 0; i < 6; i++) {
     b_sphi = 0.0F;
     for (j = 0; j < 12; j++) {
@@ -1026,10 +1050,10 @@ void hilicopter_NDI_control_step(void)
   km_0[23] = km[7];
   for (i = 0; i < 3; i++) {
     for (j = 0; j < 8; j++) {
-      K_euler_0[i + 3 * j] = 0.0F;
-      K_euler_0[i + 3 * j] += km_0[3 * j] * K_euler[i];
-      K_euler_0[i + 3 * j] += km_0[3 * j + 1] * K_euler[i + 3];
-      K_euler_0[i + 3 * j] += km_0[3 * j + 2] * K_euler[i + 6];
+      Ib_0[i + 3 * j] = 0.0F;
+      Ib_0[i + 3 * j] += km_0[3 * j] * Ib[i];
+      Ib_0[i + 3 * j] += km_0[3 * j + 1] * Ib[i + 3];
+      Ib_0[i + 3 * j] += km_0[3 * j + 2] * Ib[i + 6];
     }
   }
 
@@ -1040,9 +1064,9 @@ void hilicopter_NDI_control_step(void)
     b_k_1[3 + 12 * i] = 0.0F;
     b_k_1[4 + 12 * i] = 0.0F;
     b_k_1[5 + 12 * i] = 0.0F;
-    b_k_1[6 + 12 * i] = K_euler_0[3 * i];
-    b_k_1[7 + 12 * i] = K_euler_0[3 * i + 1];
-    b_k_1[8 + 12 * i] = K_euler_0[3 * i + 2];
+    b_k_1[6 + 12 * i] = Ib_0[3 * i];
+    b_k_1[7 + 12 * i] = Ib_0[3 * i + 1];
+    b_k_1[8 + 12 * i] = Ib_0[3 * i + 2];
     b_k_1[9 + 12 * i] = 0.0F;
     b_k_1[10 + 12 * i] = 0.0F;
     b_k_1[11 + 12 * i] = 0.0F;
@@ -1229,9 +1253,9 @@ void hilicopter_NDI_control_step(void)
   }
 
   /* End of MATLAB Function: '<Root>/um_mode_logic' */
-  /* MATLAB Function 'um2pwm/un2n': '<S16>:1' */
-  /* '<S16>:1:4' */
-  /* '<S16>:1:5' */
+  /* MATLAB Function 'um2pwm/un2n': '<S19>:1' */
+  /* '<S19>:1:4' */
+  /* '<S19>:1:5' */
   for (j = 0; j < 8; j++) {
     /* Gain: '<S9>/Tnm' incorporates:
      *  Saturate: '<S9>/Saturation 0 - unmax'
@@ -1289,8 +1313,8 @@ void hilicopter_NDI_control_step(void)
   /* Outport: '<Root>/debug' incorporates:
    *  DataTypeConversion: '<Root>/Data Type Conversion'
    */
-  hilicopter_NDI_control_Y.debug[0] = rtb_omega_ref[0];
-  hilicopter_NDI_control_Y.debug[1] = rtb_omega_ref[1];
+  hilicopter_NDI_control_Y.debug[0] = rtb_Sum_hr;
+  hilicopter_NDI_control_Y.debug[1] = rtb_Sum_kg;
   hilicopter_NDI_control_Y.debug[2] = rtb_Product;
   hilicopter_NDI_control_Y.debug[3] = rtb_Saturate;
   hilicopter_NDI_control_Y.debug[4] = rtb_Saturate_n;
@@ -1308,59 +1332,79 @@ void hilicopter_NDI_control_step(void)
    *  Product: '<S13>/IOut'
    */
   hilicopter_NDI_control_DW.Integrator_DSTATE += rtb_Add *
-    hilicopter_NDI_control_U.param[3] * 0.004F;
+    hilicopter_NDI_control_U.param[15] * 0.004F;
 
   /* Update for DiscreteIntegrator: '<S13>/Filter' */
   hilicopter_NDI_control_DW.Filter_DSTATE += 0.004F * rtb_NOut;
+
+  /* Update for DiscreteIntegrator: '<S16>/Integrator' incorporates:
+   *  Inport: '<Root>/param'
+   *  Product: '<S16>/IOut'
+   */
+  hilicopter_NDI_control_DW.Integrator_DSTATE_n += rtb_Add_p *
+    hilicopter_NDI_control_U.param[3] * 0.004F;
+
+  /* Update for DiscreteIntegrator: '<S16>/Filter' */
+  hilicopter_NDI_control_DW.Filter_DSTATE_a += 0.004F * rtb_NOut_p;
 
   /* Update for DiscreteIntegrator: '<S14>/Integrator' incorporates:
    *  Inport: '<Root>/param'
    *  Product: '<S14>/IOut'
    */
-  hilicopter_NDI_control_DW.Integrator_DSTATE_l += rtb_Add1 *
-    hilicopter_NDI_control_U.param[4] * 0.004F;
+  hilicopter_NDI_control_DW.Integrator_DSTATE_n0 += rtb_Add1 *
+    hilicopter_NDI_control_U.param[16] * 0.004F;
 
   /* Update for DiscreteIntegrator: '<S14>/Filter' */
-  hilicopter_NDI_control_DW.Filter_DSTATE_o += 0.004F * rtb_NOut_m;
+  hilicopter_NDI_control_DW.Filter_DSTATE_an += 0.004F * rtb_NOut_a;
 
-  /* Update for DiscreteIntegrator: '<S15>/Integrator' incorporates:
+  /* Update for DiscreteIntegrator: '<S17>/Integrator' incorporates:
    *  Inport: '<Root>/param'
-   *  Product: '<S15>/IOut'
+   *  Product: '<S17>/IOut'
+   */
+  hilicopter_NDI_control_DW.Integrator_DSTATE_l += rtb_Add1_d *
+    hilicopter_NDI_control_U.param[4] * 0.004F;
+
+  /* Update for DiscreteIntegrator: '<S17>/Filter' */
+  hilicopter_NDI_control_DW.Filter_DSTATE_o += 0.004F * rtb_NOut_od;
+
+  /* Update for DiscreteIntegrator: '<S18>/Integrator' incorporates:
+   *  Inport: '<Root>/param'
+   *  Product: '<S18>/IOut'
    */
   hilicopter_NDI_control_DW.Integrator_DSTATE_a += rtb_Add2 *
     hilicopter_NDI_control_U.param[5] * 0.004F;
 
-  /* Update for DiscreteIntegrator: '<S15>/Filter' */
-  hilicopter_NDI_control_DW.Filter_DSTATE_oj += 0.004F * rtb_NOut_a;
+  /* Update for DiscreteIntegrator: '<S18>/Filter' */
+  hilicopter_NDI_control_DW.Filter_DSTATE_oj += 0.004F * rtb_NOut_k;
 
-  /* Update for DiscreteIntegrator: '<S19>/Integrator' incorporates:
+  /* Update for DiscreteIntegrator: '<S22>/Integrator' incorporates:
    *  Inport: '<Root>/param'
-   *  Product: '<S19>/IOut'
-   *  Sum: '<S19>/SumI1'
-   *  Sum: '<S19>/SumI2'
+   *  Product: '<S22>/IOut'
+   *  Sum: '<S22>/SumI1'
+   *  Sum: '<S22>/SumI2'
    */
   hilicopter_NDI_control_DW.Integrator_DSTATE_m += (rtb_Add3 *
-    hilicopter_NDI_control_U.param[27] + (rtb_Saturate - rtb_Sum_d)) * 0.004F;
+    hilicopter_NDI_control_U.param[27] + (rtb_Saturate - rtb_Sum_a)) * 0.004F;
   hilicopter_NDI_control_DW.Integrator_PrevResetState = (int8_T)rtb_Compare;
 
-  /* Update for DiscreteIntegrator: '<S20>/Integrator' incorporates:
+  /* Update for DiscreteIntegrator: '<S23>/Integrator' incorporates:
    *  Inport: '<Root>/param'
-   *  Product: '<S20>/IOut'
-   *  Sum: '<S20>/SumI1'
-   *  Sum: '<S20>/SumI2'
+   *  Product: '<S23>/IOut'
+   *  Sum: '<S23>/SumI1'
+   *  Sum: '<S23>/SumI2'
    */
   hilicopter_NDI_control_DW.Integrator_DSTATE_k += (rtb_Add4 *
-    hilicopter_NDI_control_U.param[28] + (rtb_Saturate_n - rtb_Sum_m)) * 0.004F;
+    hilicopter_NDI_control_U.param[28] + (rtb_Saturate_n - rtb_Sum_l)) * 0.004F;
   hilicopter_NDI_control_DW.Integrator_PrevResetState_h = (int8_T)rtb_Compare;
 
-  /* Update for DiscreteIntegrator: '<S21>/Integrator' incorporates:
+  /* Update for DiscreteIntegrator: '<S24>/Integrator' incorporates:
    *  Inport: '<Root>/param'
-   *  Product: '<S21>/IOut'
-   *  Sum: '<S21>/SumI1'
-   *  Sum: '<S21>/SumI2'
+   *  Product: '<S24>/IOut'
+   *  Sum: '<S24>/SumI1'
+   *  Sum: '<S24>/SumI2'
    */
   hilicopter_NDI_control_DW.Integrator_DSTATE_ah += (rtb_Add5 *
-    hilicopter_NDI_control_U.param[29] + (rtb_Saturate_a - rtb_Sum_j)) * 0.004F;
+    hilicopter_NDI_control_U.param[29] + (rtb_Saturate_a - rtb_Sum_g)) * 0.004F;
   hilicopter_NDI_control_DW.Integrator_PrevResetState_i = (int8_T)rtb_Compare_f;
 }
 
@@ -1384,13 +1428,13 @@ void hilicopter_NDI_control_initialize(void)
   (void) memset((void *)&hilicopter_NDI_control_Y, 0,
                 sizeof(ExtY_hilicopter_NDI_control_T));
 
-  /* InitializeConditions for DiscreteIntegrator: '<S19>/Integrator' */
+  /* InitializeConditions for DiscreteIntegrator: '<S22>/Integrator' */
   hilicopter_NDI_control_DW.Integrator_PrevResetState = 2;
 
-  /* InitializeConditions for DiscreteIntegrator: '<S20>/Integrator' */
+  /* InitializeConditions for DiscreteIntegrator: '<S23>/Integrator' */
   hilicopter_NDI_control_DW.Integrator_PrevResetState_h = 2;
 
-  /* InitializeConditions for DiscreteIntegrator: '<S21>/Integrator' */
+  /* InitializeConditions for DiscreteIntegrator: '<S24>/Integrator' */
   hilicopter_NDI_control_DW.Integrator_DSTATE_ah = 35.0F;
   hilicopter_NDI_control_DW.Integrator_PrevResetState_i = 2;
 }

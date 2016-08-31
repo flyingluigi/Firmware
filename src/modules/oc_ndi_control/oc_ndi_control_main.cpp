@@ -561,7 +561,7 @@ int oc_ndi_control_thread(int argc, char *argv[])
 
     _params_handles.max_rate =     param_find("NDI_MAX_RATE");
     _params_handles.max_angle =     param_find("NDI_MAX_ANGLE");
-    _params_handles.max_vel =     param_find("NDI_MAX_Velocity");
+    _params_handles.max_vel =     param_find("NDI_MAX_VEL");
 
     /* initialize parameters cache*/
         parameters_update();
@@ -635,22 +635,22 @@ int oc_ndi_control_thread(int argc, char *argv[])
             hilicopter_NDI_control_U.param[21] = _params.att_N[0];
             hilicopter_NDI_control_U.param[22] = _params.att_N[1];
             hilicopter_NDI_control_U.param[23] = _params.att_N[2];
-			
-            hilicopter_NDI_control_U.param[24] = _params.model_i[0];
-            hilicopter_NDI_control_U.param[25] = _params.model_i[1];
-            hilicopter_NDI_control_U.param[26] = _params.model_i[2];
-            hilicopter_NDI_control_U.param[27] = _params.vel_p[0];
-            hilicopter_NDI_control_U.param[28] = _params.vel_p[1];
-            hilicopter_NDI_control_U.param[29] = _params.vel_p[2];
-            hilicopter_NDI_control_U.param[30] = _params.vel_i[0];
-            hilicopter_NDI_control_U.param[31] = _params.vel_i[1];
-            hilicopter_NDI_control_U.param[32] = _params.vel_i[2];
-            hilicopter_NDI_control_U.param[33] = _params.pos_p[0];
-            hilicopter_NDI_control_U.param[34] = _params.pos_p[1];
-            hilicopter_NDI_control_U.param[35] = _params.pos_p[2];
-            hilicopter_NDI_control_U.param[36] = _params.max_val[0];
-            hilicopter_NDI_control_U.param[37] = _params.max_val[1];
-            hilicopter_NDI_control_U.param[38] = _params.max_val[2];
+		
+            hilicopter_NDI_control_U.param[24] = _params.vel_p[0];
+            hilicopter_NDI_control_U.param[25] = _params.vel_p[1];
+            hilicopter_NDI_control_U.param[26] = _params.vel_p[2];
+            hilicopter_NDI_control_U.param[27] = _params.vel_i[0];
+            hilicopter_NDI_control_U.param[28] = _params.vel_i[1];
+            hilicopter_NDI_control_U.param[29] = _params.vel_i[2];
+            hilicopter_NDI_control_U.param[30] = _params.pos_p[0];
+            hilicopter_NDI_control_U.param[31] = _params.pos_p[1];
+            hilicopter_NDI_control_U.param[32] = _params.pos_p[2];
+            hilicopter_NDI_control_U.param[33] = _params.max_val[0];
+            hilicopter_NDI_control_U.param[34] = _params.max_val[1];
+            hilicopter_NDI_control_U.param[35] = _params.max_val[2];
+            hilicopter_NDI_control_U.param[36] = _params.model_i[0];
+            hilicopter_NDI_control_U.param[37] = _params.model_i[1];
+            hilicopter_NDI_control_U.param[38] = _params.model_i[2];
 			
             //Quaternion _q = control_state.q;
             //Vector<3> euler = _q.to_euler();
@@ -739,7 +739,14 @@ int oc_ndi_control_thread(int argc, char *argv[])
             orb_publish(ORB_ID(simulink_app_debug), simulink_app_debug_pub, &ndi_debug);
 
             perf_end(ndi_loop_perf);
-            //PX4_WARN("%0.5f",(double)dt);
+			
+            PX4_WARN("%0.2f %0.2f %0.2f %0.2f %0.2f %0.2f",(double)ndi_debug.debug[6] \
+								  ,(double)ndi_debug.debug[7] \
+								  ,(double)ndi_debug.debug[8] \
+								  ,(double)ndi_debug.debug[9] \
+								  ,(double)ndi_debug.debug[10] \
+								  ,(double)ndi_debug.debug[11]);
+			
             }
 
     }

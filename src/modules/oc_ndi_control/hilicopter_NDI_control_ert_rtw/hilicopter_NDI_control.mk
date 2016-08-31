@@ -2,7 +2,7 @@
 ## Makefile generated for Simulink model 'hilicopter_NDI_control'. 
 ## 
 ## Makefile     : hilicopter_NDI_control.mk
-## Generated on : Tue Aug 30 09:26:38 2016
+## Generated on : Tue Aug 30 17:16:27 2016
 ## MATLAB Coder version: 3.0 (R2015b)
 ## 
 ## Build Info:

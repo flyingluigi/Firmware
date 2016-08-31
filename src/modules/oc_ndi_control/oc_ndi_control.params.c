@@ -356,4 +356,4 @@ PARAM_DEFINE_FLOAT(NDI_MAX_ANGLE, 45.0f);
  * @increment 0.1
  * @group Octocopter NDI Control
  */
-PARAM_DEFINE_FLOAT(NDI_MAX_Velocity, 5.0f);
+PARAM_DEFINE_FLOAT(NDI_MAX_VEL, 5.0f);

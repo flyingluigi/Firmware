@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'hilicopter_NDI_control'.
  *
- * Model version                  : 1.176
+ * Model version                  : 1.182
  * Simulink Coder version         : 8.9 (R2015b) 13-Aug-2015
- * C/C++ source code generated on : Tue Aug 30 09:26:35 2016
+ * C/C++ source code generated on : Tue Aug 30 17:16:18 2016
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex
@@ -38,16 +38,20 @@
 typedef struct {
   real32_T Integrator_DSTATE;          /* '<S13>/Integrator' */
   real32_T Filter_DSTATE;              /* '<S13>/Filter' */
-  real32_T Integrator_DSTATE_l;        /* '<S14>/Integrator' */
-  real32_T Filter_DSTATE_o;            /* '<S14>/Filter' */
-  real32_T Integrator_DSTATE_a;        /* '<S15>/Integrator' */
-  real32_T Filter_DSTATE_oj;           /* '<S15>/Filter' */
-  real32_T Integrator_DSTATE_m;        /* '<S19>/Integrator' */
-  real32_T Integrator_DSTATE_k;        /* '<S20>/Integrator' */
-  real32_T Integrator_DSTATE_ah;       /* '<S21>/Integrator' */
-  int8_T Integrator_PrevResetState;    /* '<S19>/Integrator' */
-  int8_T Integrator_PrevResetState_h;  /* '<S20>/Integrator' */
-  int8_T Integrator_PrevResetState_i;  /* '<S21>/Integrator' */
+  real32_T Integrator_DSTATE_n;        /* '<S16>/Integrator' */
+  real32_T Filter_DSTATE_a;            /* '<S16>/Filter' */
+  real32_T Integrator_DSTATE_n0;       /* '<S14>/Integrator' */
+  real32_T Filter_DSTATE_an;           /* '<S14>/Filter' */
+  real32_T Integrator_DSTATE_l;        /* '<S17>/Integrator' */
+  real32_T Filter_DSTATE_o;            /* '<S17>/Filter' */
+  real32_T Integrator_DSTATE_a;        /* '<S18>/Integrator' */
+  real32_T Filter_DSTATE_oj;           /* '<S18>/Filter' */
+  real32_T Integrator_DSTATE_m;        /* '<S22>/Integrator' */
+  real32_T Integrator_DSTATE_k;        /* '<S23>/Integrator' */
+  real32_T Integrator_DSTATE_ah;       /* '<S24>/Integrator' */
+  int8_T Integrator_PrevResetState;    /* '<S22>/Integrator' */
+  int8_T Integrator_PrevResetState_h;  /* '<S23>/Integrator' */
+  int8_T Integrator_PrevResetState_i;  /* '<S24>/Integrator' */
 } DW_hilicopter_NDI_control_T;
 
 /* Constant parameters (auto storage) */
@@ -119,7 +123,7 @@ extern RT_MODEL_hilicopter_NDI_contr_T *const hilicopter_NDI_control_M;
  *
  * '<Root>' : 'hilicopter_NDI_control'
  * '<S1>'   : 'hilicopter_NDI_control/NDI_control_law'
- * '<S2>'   : 'hilicopter_NDI_control/att_control'
+ * '<S2>'   : 'hilicopter_NDI_control/angle_control'
  * '<S3>'   : 'hilicopter_NDI_control/mode select'
  * '<S4>'   : 'hilicopter_NDI_control/mode_logic'
  * '<S5>'   : 'hilicopter_NDI_control/rate_control'
@@ -130,15 +134,18 @@ extern RT_MODEL_hilicopter_NDI_contr_T *const hilicopter_NDI_control_M;
  * '<S10>'  : 'hilicopter_NDI_control/um_mode_logic'
  * '<S11>'  : 'hilicopter_NDI_control/vel_control'
  * '<S12>'  : 'hilicopter_NDI_control/vel_mode_logic'
- * '<S13>'  : 'hilicopter_NDI_control/rate_control/rate_p'
- * '<S14>'  : 'hilicopter_NDI_control/rate_control/rate_p1'
- * '<S15>'  : 'hilicopter_NDI_control/rate_control/rate_p2'
- * '<S16>'  : 'hilicopter_NDI_control/um2pwm/un2n'
- * '<S17>'  : 'hilicopter_NDI_control/vel_control/Reset integral on arming'
- * '<S18>'  : 'hilicopter_NDI_control/vel_control/Reset integral on mode change'
- * '<S19>'  : 'hilicopter_NDI_control/vel_control/vel_u'
- * '<S20>'  : 'hilicopter_NDI_control/vel_control/vel_v'
- * '<S21>'  : 'hilicopter_NDI_control/vel_control/vel_w'
+ * '<S13>'  : 'hilicopter_NDI_control/angle_control/rate_p'
+ * '<S14>'  : 'hilicopter_NDI_control/angle_control/rate_p1'
+ * '<S15>'  : 'hilicopter_NDI_control/angle_control/rate_p2'
+ * '<S16>'  : 'hilicopter_NDI_control/rate_control/rate_p'
+ * '<S17>'  : 'hilicopter_NDI_control/rate_control/rate_p1'
+ * '<S18>'  : 'hilicopter_NDI_control/rate_control/rate_p2'
+ * '<S19>'  : 'hilicopter_NDI_control/um2pwm/un2n'
+ * '<S20>'  : 'hilicopter_NDI_control/vel_control/Reset integral on arming'
+ * '<S21>'  : 'hilicopter_NDI_control/vel_control/Reset integral on mode change'
+ * '<S22>'  : 'hilicopter_NDI_control/vel_control/vel_u'
+ * '<S23>'  : 'hilicopter_NDI_control/vel_control/vel_v'
+ * '<S24>'  : 'hilicopter_NDI_control/vel_control/vel_w'
  */
 #endif                                 /* RTW_HEADER_hilicopter_NDI_control_h_ */
 
