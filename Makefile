@@ -171,6 +171,9 @@ px4-stm32f4discovery_default:
 mindpx-v2_default:
 	$(call cmake-build,nuttx_mindpx-v2_default)
 
+crazyflie_default:
+	$(call cmake-build,nuttx_crazyflie_default)
+
 posix_sitl_default:
 	$(call cmake-build,$@)
 
@@ -276,16 +279,14 @@ checks_last: \
 	check_format \
 
 check: checks_defaults checks_tests checks_alts checks_uavcan checks_bootloaders checks_last
-quick_check: check_px4fmu-v2_default check_px4fmu-v4_default check_posix_sitl_default check_tests check_format
+quick_check: check_posix_sitl_default check_px4fmu-v4_default check_tests check_format
 
 check_format:
 	$(call colorecho,"Checking formatting with astyle")
-	@./Tools/fix_code_style.sh
 	@./Tools/check_code_style_all.sh
 
 format:
 	$(call colorecho,"Formatting with astyle")
-	@./Tools/fix_code_style.sh
 	@./Tools/check_code_style_all.sh --fix
 
 check_%:

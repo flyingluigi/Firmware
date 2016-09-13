@@ -45,6 +45,7 @@
 #include <px4_time.h>
 #include <px4_tasks.h>
 #include <px4_defines.h>
+#include <px4_posix.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -412,7 +413,7 @@ MavlinkReceiver::handle_message_command_long(mavlink_message_t *msg)
 			vcmd.confirmation =  cmd_mavlink.confirmation;
 
 			if (_cmd_pub == nullptr) {
-				_cmd_pub = orb_advertise(ORB_ID(vehicle_command), &vcmd);
+				_cmd_pub = orb_advertise_queue(ORB_ID(vehicle_command), &vcmd, vehicle_command_s::ORB_QUEUE_LENGTH);
 
 			} else {
 				orb_publish(ORB_ID(vehicle_command), _cmd_pub, &vcmd);
@@ -488,7 +489,7 @@ MavlinkReceiver::handle_message_command_int(mavlink_message_t *msg)
 			vcmd.source_component = msg->compid;
 
 			if (_cmd_pub == nullptr) {
-				_cmd_pub = orb_advertise(ORB_ID(vehicle_command), &vcmd);
+				_cmd_pub = orb_advertise_queue(ORB_ID(vehicle_command), &vcmd, vehicle_command_s::ORB_QUEUE_LENGTH);
 
 			} else {
 				orb_publish(ORB_ID(vehicle_command), _cmd_pub, &vcmd);
@@ -636,7 +637,7 @@ MavlinkReceiver::handle_message_set_mode(mavlink_message_t *msg)
 	vcmd.confirmation = 1;
 
 	if (_cmd_pub == nullptr) {
-		_cmd_pub = orb_advertise(ORB_ID(vehicle_command), &vcmd);
+		_cmd_pub = orb_advertise_queue(ORB_ID(vehicle_command), &vcmd, vehicle_command_s::ORB_QUEUE_LENGTH);
 
 	} else {
 		orb_publish(ORB_ID(vehicle_command), _cmd_pub, &vcmd);
@@ -2246,7 +2247,7 @@ MavlinkReceiver::receive_start(pthread_t *thread, Mavlink *parent)
 	param.sched_priority = SCHED_PRIORITY_MAX - 80;
 	(void)pthread_attr_setschedparam(&receiveloop_attr, &param);
 
-	pthread_attr_setstacksize(&receiveloop_attr, 2100);
+	pthread_attr_setstacksize(&receiveloop_attr, PX4_STACK_ADJUSTED(2100));
 	pthread_create(thread, &receiveloop_attr, MavlinkReceiver::start_helper, (void *)parent);
 
 	pthread_attr_destroy(&receiveloop_attr);
