@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'quad_ndi'.
  *
- * Model version                  : 1.66
+ * Model version                  : 1.78
  * Simulink Coder version         : 8.9 (R2015b) 13-Aug-2015
- * C/C++ source code generated on : Sat Aug 27 12:55:15 2016
+ * C/C++ source code generated on : Thu Sep 01 16:38:06 2016
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex

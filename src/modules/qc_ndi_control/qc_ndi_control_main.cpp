@@ -301,7 +301,6 @@ void    qc_rc_channels_poll()
     /* check if there is a new setpoint */
     bool updated;
     orb_check(qc_rc_channels_sub, &updated);
-
     if (updated) {
         orb_copy(ORB_ID(rc_channels), qc_rc_channels_sub, &qc_rc_in);
     }
@@ -337,7 +336,6 @@ void   qc_control_state_poll()
     /* check if there is a new setpoint */
     bool updated;
     orb_check(qc_control_state_sub, &updated);
-
     if (updated) {
             orb_copy(ORB_ID(control_state), qc_control_state_sub, &qc_control_state);
     }
@@ -429,7 +427,6 @@ int qc_ndi_control_thread(int argc, char *argv[])
             PX4_WARN("No RGB LED found at " RGBLED0_DEVICE_PATH);
     }
 
-
     memset(&qc_rc_in, 0, sizeof(qc_rc_in));
     memset(&qc_attitude, 0, sizeof(qc_attitude));
     memset(&qc_local_position, 0, sizeof(qc_local_position));
@@ -473,7 +470,6 @@ int qc_ndi_control_thread(int argc, char *argv[])
     /* initialize parameters cache*/
         qc_parameters_update();
 
-
     // orb_set_interval(qc_control_state_sub, 4); // Fundamental step size in ms
 
     /* wakeup source: vehicle attitude */
@@ -481,7 +477,6 @@ int qc_ndi_control_thread(int argc, char *argv[])
 
     fds[0].fd = qc_vehicle_attitude_sub;
     fds[0].events = POLLIN;
-
 
     qc_thread_running = true;
     /* set leds to disarmed*/
@@ -527,8 +522,7 @@ int qc_ndi_control_thread(int argc, char *argv[])
             qc_parameter_update_poll();
             qc_rc_channels_poll();
             qc_vehicle_local_position_poll();
-            qc_control_state_poll();
-			
+          		
             quad_ndi_U.param[0] = _params_qc.att_p[0];
             quad_ndi_U.param[1] = _params_qc.att_p[1];
             quad_ndi_U.param[2] = _params_qc.att_p[2];
@@ -566,15 +560,16 @@ int qc_ndi_control_thread(int argc, char *argv[])
             quad_ndi_U.u_cmd[1] = qc_rc_in.channels[1];
             quad_ndi_U.u_cmd[2] = qc_rc_in.channels[3];
 			quad_ndi_U.u_cmd[3] = qc_rc_in.channels[2];
-					  
-					  
+            
+            
+            
+            
             //main control loop
             /*Check arming status*/
-			 if(qc_rc_in.channels[4] > 0.5f)
+			 if(qc_rc_in.channels[4] > 0.5f && !qc_rc_in.signal_lost)
                 qc_ndi_arm = true;
 			 else
 				 qc_ndi_arm = false;
-			
 			
 			quad_ndi_step();
 				
@@ -608,10 +603,9 @@ int qc_ndi_control_thread(int argc, char *argv[])
             qc_ndi_debug.debug[2] = quad_ndi_Y.debug[2];
 
             orb_publish(ORB_ID(simulink_app_debug), qc_simulink_app_debug_pub, &qc_ndi_debug);
-
             
             perf_end(ndi_loop_perf);
-            PX4_WARN("%0.1f %0.1f %0.1f %0.1f",(double)qc_ndi_debug.debug[0],(double)qc_ndi_debug.debug[1],(double)qc_ndi_debug.debug[3],(double)quad_ndi_U.u_cmd[3]);
+            //PX4_WARN("%0.1f %0.1f %0.1f %0.1f",(double)qc_ndi_debug.debug[0],(double)qc_ndi_debug.debug[1],(double)qc_ndi_debug.debug[3],(double)quad_ndi_U.u_cmd[3]);
             }
 
     }

@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'hilicopter_NDI_control'.
  *
- * Model version                  : 1.182
+ * Model version                  : 1.370
  * Simulink Coder version         : 8.9 (R2015b) 13-Aug-2015
- * C/C++ source code generated on : Tue Aug 30 17:16:18 2016
+ * C/C++ source code generated on : Sat Sep 10 17:04:28 2016
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex
@@ -16,10 +16,11 @@
 #ifndef RTW_HEADER_hilicopter_NDI_control_types_h_
 #define RTW_HEADER_hilicopter_NDI_control_types_h_
 #include "rtwtypes.h"
-#ifndef _DEFINED_TYPEDEF_FOR_struct_LsE4pJyaGkFOziDPkuTr6_
-#define _DEFINED_TYPEDEF_FOR_struct_LsE4pJyaGkFOziDPkuTr6_
+#ifndef _DEFINED_TYPEDEF_FOR_struct_0N1ZcU4DUQBmM8WiLk7GQE_
+#define _DEFINED_TYPEDEF_FOR_struct_0N1ZcU4DUQBmM8WiLk7GQE_
 
 typedef struct {
+  real_T config;
   real_T L;
   real_T R[24];
   real_T delta;
@@ -40,7 +41,7 @@ typedef struct {
   real_T unmax;
   real_T Tmn[48];
   real_T Tnm[48];
-} struct_LsE4pJyaGkFOziDPkuTr6;
+} struct_0N1ZcU4DUQBmM8WiLk7GQE;
 
 #endif
 

@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'quad_ndi'.
  *
- * Model version                  : 1.66
+ * Model version                  : 1.78
  * Simulink Coder version         : 8.9 (R2015b) 13-Aug-2015
- * C/C++ source code generated on : Sat Aug 27 12:55:15 2016
+ * C/C++ source code generated on : Thu Sep 01 16:38:06 2016
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex
@@ -39,9 +39,9 @@
 /* Block states (auto storage) for system '<Root>' */
 typedef struct {
   real32_T Integrator_DSTATE;          /* '<S1>/Integrator' */
-  real32_T Filter_DSTATE;              /* '<S1>/Filter' */
-  real32_T Integrator_DSTATE_k;        /* '<S2>/Integrator' */
-  real32_T Filter_DSTATE_a;            /* '<S2>/Filter' */
+  real32_T FilterState_DSTATE;         /* '<S1>/Filter State' */
+  real32_T Integrator_DSTATE_o;        /* '<S2>/Integrator' */
+  real32_T FilterState_DSTATE_n;       /* '<S2>/Filter State' */
 } DW_quad_ndi_T;
 
 /* Constant parameters (auto storage) */
@@ -106,8 +106,8 @@ extern RT_MODEL_quad_ndi_T *const quad_ndi_M;
  * Here is the system hierarchy for this model
  *
  * '<Root>' : 'quad_ndi'
- * '<S1>'   : 'quad_ndi/Discrete PID Controller (2DOF)'
- * '<S2>'   : 'quad_ndi/Discrete PID Controller (2DOF)1'
+ * '<S1>'   : 'quad_ndi/Discrete_PID_measurement_D'
+ * '<S2>'   : 'quad_ndi/Discrete_PID_measurement_D1'
  * '<S3>'   : 'quad_ndi/NDI LAW'
  * '<S4>'   : 'quad_ndi/PID Controller1'
  * '<S5>'   : 'quad_ndi/PID Controller2'

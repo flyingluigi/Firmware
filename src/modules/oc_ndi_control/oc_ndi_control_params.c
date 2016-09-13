@@ -277,6 +277,37 @@ PARAM_DEFINE_FLOAT(NDI_VELZ_I, 0.1f);
 
 
 /**
+ *  XYZ Velocity Control D gain
+ *
+ *  XYZ Velocity Control derivative gain
+ *
+ *
+ * @min 0.00
+ * @max 15
+ * @decimal 2
+ * @increment 0.01
+ * @group Octocopter NDI Control
+ */
+PARAM_DEFINE_FLOAT(NDI_VELX_D, 0.0f);
+PARAM_DEFINE_FLOAT(NDI_VELY_D, 0.0f);
+PARAM_DEFINE_FLOAT(NDI_VELZ_D, 0.0f);
+
+/**
+ *  XYZ Velocity Control N Filter Value
+ *
+ *
+ *
+ * @min 0
+ * @max 200
+ * @decimal 2
+ * @increment 0.01
+ * @group Octocopter NDI Control
+ */
+PARAM_DEFINE_FLOAT(NDI_VELX_N, 50.0f);
+PARAM_DEFINE_FLOAT(NDI_VELY_N, 50.0f);
+PARAM_DEFINE_FLOAT(NDI_VELZ_N, 50.0f);
+
+/**
  *  X Position Control P gain
  *
  * X Position Control proportional gain

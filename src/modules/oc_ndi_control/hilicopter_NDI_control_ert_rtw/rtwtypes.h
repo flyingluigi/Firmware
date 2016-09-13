@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'hilicopter_NDI_control'.
  *
- * Model version                  : 1.182
+ * Model version                  : 1.370
  * Simulink Coder version         : 8.9 (R2015b) 13-Aug-2015
- * C/C++ source code generated on : Tue Aug 30 17:16:18 2016
+ * C/C++ source code generated on : Sat Sep 10 17:04:28 2016
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex
