@@ -121,6 +121,7 @@ set(msg_file_names
 	simulink_app_debug.msg
 	simulink_app_pwm.msg
 	vehicle_roi.msg
+	fast_gyro.msg
 	)
 
 # Get absolute paths

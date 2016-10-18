@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'hilicopter_NDI_control'.
  *
- * Model version                  : 1.370
+ * Model version                  : 1.480
  * Simulink Coder version         : 8.9 (R2015b) 13-Aug-2015
- * C/C++ source code generated on : Sat Sep 10 17:04:28 2016
+ * C/C++ source code generated on : Tue Oct 18 09:13:15 2016
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex
@@ -36,24 +36,26 @@
 
 /* Block states (auto storage) for system '<Root>' */
 typedef struct {
-  real32_T Integrator_DSTATE;          /* '<S15>/Integrator' */
-  real32_T Filter_DSTATE;              /* '<S15>/Filter' */
-  real32_T Integrator_DSTATE_f;        /* '<S23>/Integrator' */
-  real32_T FilterState_DSTATE;         /* '<S23>/Filter State' */
-  real32_T Integrator_DSTATE_n;        /* '<S16>/Integrator' */
-  real32_T Filter_DSTATE_a;            /* '<S16>/Filter' */
-  real32_T Integrator_DSTATE_i;        /* '<S24>/Integrator' */
-  real32_T FilterState_DSTATE_k;       /* '<S24>/Filter State' */
-  real32_T Integrator_DSTATE_g;        /* '<S25>/Integrator' */
-  real32_T FilterState_DSTATE_n;       /* '<S25>/Filter State' */
-  real32_T FilterState_DSTATE_l;       /* '<S29>/Filter State' */
-  real32_T FilterState_DSTATE_h;       /* '<S28>/Filter State' */
-  real32_T Integrator_DSTATE_ig;       /* '<S27>/Integrator' */
-  real32_T FilterState_DSTATE_lx;      /* '<S27>/Filter State' */
-  int8_T FilterState_PrevResetState;   /* '<S29>/Filter State' */
-  int8_T FilterState_PrevResetState_h; /* '<S28>/Filter State' */
-  int8_T Integrator_PrevResetState;    /* '<S27>/Integrator' */
-  int8_T FilterState_PrevResetState_hn;/* '<S27>/Filter State' */
+  real32_T Integrator_DSTATE;          /* '<S19>/Integrator' */
+  real32_T Filter_DSTATE;              /* '<S19>/Filter' */
+  real32_T Integrator_DSTATE_n;        /* '<S21>/Integrator' */
+  real32_T Filter_DSTATE_a;            /* '<S21>/Filter' */
+  real32_T Integrator_DSTATE_o;        /* '<S20>/Integrator' */
+  real32_T Filter_DSTATE_f;            /* '<S20>/Filter' */
+  real32_T Integrator_DSTATE_f;        /* '<S32>/Integrator' */
+  real32_T FilterState_DSTATE;         /* '<S32>/Filter State' */
+  real32_T Integrator_DSTATE_i;        /* '<S33>/Integrator' */
+  real32_T FilterState_DSTATE_k;       /* '<S33>/Filter State' */
+  real32_T Integrator_DSTATE_g;        /* '<S34>/Integrator' */
+  real32_T FilterState_DSTATE_n;       /* '<S34>/Filter State' */
+  real32_T FilterState_DSTATE_l;       /* '<S24>/Filter State' */
+  real32_T FilterState_DSTATE_h;       /* '<S23>/Filter State' */
+  real32_T Integrator_DSTATE_ig;       /* '<S22>/Integrator' */
+  real32_T FilterState_DSTATE_lx;      /* '<S22>/Filter State' */
+  int8_T FilterState_PrevResetState;   /* '<S24>/Filter State' */
+  int8_T FilterState_PrevResetState_h; /* '<S23>/Filter State' */
+  int8_T Integrator_PrevResetState;    /* '<S22>/Integrator' */
+  int8_T FilterState_PrevResetState_hn;/* '<S22>/Filter State' */
 } DW_hilicopter_NDI_control_T;
 
 /* Constant parameters (auto storage) */
@@ -61,12 +63,12 @@ typedef struct {
   /* Pooled Parameter (Expression: param)
    * Referenced by:
    *   '<Root>/NDI_control_law'
-   *   '<S11>/un2n'
+   *   '<S18>/un2n'
    */
   struct_0N1ZcU4DUQBmM8WiLk7GQE pooled1;
 
   /* Computed Parameter: Tnm_Gain
-   * Referenced by: '<S11>/Tnm'
+   * Referenced by: '<S18>/Tnm'
    */
   real32_T Tnm_Gain[48];
 } ConstP_hilicopter_NDI_control_T;
@@ -126,35 +128,39 @@ extern RT_MODEL_hilicopter_NDI_contr_T *const hilicopter_NDI_control_M;
  * '<Root>' : 'hilicopter_NDI_control'
  * '<S1>'   : 'hilicopter_NDI_control/NDI_control_law'
  * '<S2>'   : 'hilicopter_NDI_control/angle_control'
- * '<S3>'   : 'hilicopter_NDI_control/mode select'
- * '<S4>'   : 'hilicopter_NDI_control/mode_logic'
- * '<S5>'   : 'hilicopter_NDI_control/position_control'
- * '<S6>'   : 'hilicopter_NDI_control/rate_control'
- * '<S7>'   : 'hilicopter_NDI_control/rotate_u'
- * '<S8>'   : 'hilicopter_NDI_control/rotate_u1'
- * '<S9>'   : 'hilicopter_NDI_control/select_u'
- * '<S10>'  : 'hilicopter_NDI_control/select_x'
- * '<S11>'  : 'hilicopter_NDI_control/um2pwm'
- * '<S12>'  : 'hilicopter_NDI_control/um_mode_logic'
- * '<S13>'  : 'hilicopter_NDI_control/vel_control'
- * '<S14>'  : 'hilicopter_NDI_control/vel_mode_logic'
- * '<S15>'  : 'hilicopter_NDI_control/angle_control/rate_p'
- * '<S16>'  : 'hilicopter_NDI_control/angle_control/rate_p1'
- * '<S17>'  : 'hilicopter_NDI_control/angle_control/rate_p2'
- * '<S18>'  : 'hilicopter_NDI_control/position_control/position_setpoint'
- * '<S19>'  : 'hilicopter_NDI_control/position_control/x_pos'
- * '<S20>'  : 'hilicopter_NDI_control/position_control/y_pos'
- * '<S21>'  : 'hilicopter_NDI_control/position_control/z_pos'
- * '<S22>'  : 'hilicopter_NDI_control/rate_control/Discrete_PID_error_D'
- * '<S23>'  : 'hilicopter_NDI_control/rate_control/Discrete_PID_measurement_D'
- * '<S24>'  : 'hilicopter_NDI_control/rate_control/Discrete_PID_measurement_D1'
- * '<S25>'  : 'hilicopter_NDI_control/rate_control/Discrete_PID_measurement_D2'
- * '<S26>'  : 'hilicopter_NDI_control/um2pwm/un2n'
- * '<S27>'  : 'hilicopter_NDI_control/vel_control/Discrete_PID'
- * '<S28>'  : 'hilicopter_NDI_control/vel_control/Discrete_PID1'
- * '<S29>'  : 'hilicopter_NDI_control/vel_control/Discrete_PID2'
- * '<S30>'  : 'hilicopter_NDI_control/vel_control/Reset integral on arming'
- * '<S31>'  : 'hilicopter_NDI_control/vel_control/Reset integral on mode change'
+ * '<S3>'   : 'hilicopter_NDI_control/horizontal_vel_control'
+ * '<S4>'   : 'hilicopter_NDI_control/manual_pos_control'
+ * '<S5>'   : 'hilicopter_NDI_control/mode select'
+ * '<S6>'   : 'hilicopter_NDI_control/mode_logic_acc'
+ * '<S7>'   : 'hilicopter_NDI_control/mode_logic_euler_ref'
+ * '<S8>'   : 'hilicopter_NDI_control/mode_logic_horizontal_velocity'
+ * '<S9>'   : 'hilicopter_NDI_control/mode_logic_position'
+ * '<S10>'  : 'hilicopter_NDI_control/mode_logic_rate'
+ * '<S11>'  : 'hilicopter_NDI_control/mode_logic_um'
+ * '<S12>'  : 'hilicopter_NDI_control/pos_control'
+ * '<S13>'  : 'hilicopter_NDI_control/rate_control'
+ * '<S14>'  : 'hilicopter_NDI_control/rotate_u'
+ * '<S15>'  : 'hilicopter_NDI_control/rotate_u1'
+ * '<S16>'  : 'hilicopter_NDI_control/select_u'
+ * '<S17>'  : 'hilicopter_NDI_control/select_x'
+ * '<S18>'  : 'hilicopter_NDI_control/um2pwm'
+ * '<S19>'  : 'hilicopter_NDI_control/angle_control/angle_control_phi'
+ * '<S20>'  : 'hilicopter_NDI_control/angle_control/angle_control_psi'
+ * '<S21>'  : 'hilicopter_NDI_control/angle_control/angle_control_theta'
+ * '<S22>'  : 'hilicopter_NDI_control/horizontal_vel_control/Discrete_PID'
+ * '<S23>'  : 'hilicopter_NDI_control/horizontal_vel_control/Discrete_PID1'
+ * '<S24>'  : 'hilicopter_NDI_control/horizontal_vel_control/Discrete_PID2'
+ * '<S25>'  : 'hilicopter_NDI_control/horizontal_vel_control/Reset integral on arming'
+ * '<S26>'  : 'hilicopter_NDI_control/horizontal_vel_control/Reset integral on mode change'
+ * '<S27>'  : 'hilicopter_NDI_control/manual_pos_control/position_integral'
+ * '<S28>'  : 'hilicopter_NDI_control/pos_control/x_pos'
+ * '<S29>'  : 'hilicopter_NDI_control/pos_control/y_pos'
+ * '<S30>'  : 'hilicopter_NDI_control/pos_control/z_pos'
+ * '<S31>'  : 'hilicopter_NDI_control/rate_control/Discrete_PID_error_D'
+ * '<S32>'  : 'hilicopter_NDI_control/rate_control/Discrete_PID_measurement_D'
+ * '<S33>'  : 'hilicopter_NDI_control/rate_control/Discrete_PID_measurement_D1'
+ * '<S34>'  : 'hilicopter_NDI_control/rate_control/Discrete_PID_measurement_D2'
+ * '<S35>'  : 'hilicopter_NDI_control/um2pwm/un2n'
  */
 #endif                                 /* RTW_HEADER_hilicopter_NDI_control_h_ */
 

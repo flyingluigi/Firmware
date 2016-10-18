@@ -69,6 +69,8 @@
 #include <uORB/topics/rc_channels.h>
 #include <uORB/topics/control_state.h>
 #include <uORB/topics/parameter_update.h>
+#include <uORB/topics/sensor_gyro.h>
+
 
 #include "uORB/topics/simulink_app_pwm.h"
 #include "uORB/topics/simulink_app_debug.h"
@@ -135,6 +137,7 @@ int qc_vehicle_attitude_sub;
 int qc_vehicle_local_position_sub;
 int qc_control_state_sub;
 int qc_params_qc_sub;
+int qc_sensor_gyro_sub;
 
 orb_advert_t qc_simulink_app_pwm_pub;
 orb_advert_t qc_simulink_app_debug_pub;
@@ -145,6 +148,7 @@ struct vehicle_local_position_s qc_local_position;
 struct control_state_s qc_control_state;
 struct simulink_app_pwm_s qc_pwm_out;
 struct simulink_app_debug_s qc_ndi_debug;
+struct sensor_gyro_s qc_sensor_gyro;
 
 extern "C" __EXPORT int qc_ndi_control_main(int argc, char *argv[]);
 
@@ -184,8 +188,6 @@ void    qc_rc_channels_poll();
 /**
  * Check for attitude updates.
  */
-
-
 void   qc_attitude_poll();
 
 /**
@@ -416,6 +418,7 @@ int qc_ndi_control_thread(int argc, char *argv[])
     qc_vehicle_local_position_sub = orb_subscribe(ORB_ID(vehicle_local_position));
     qc_control_state_sub = orb_subscribe(ORB_ID(control_state));
     qc_params_qc_sub = orb_subscribe(ORB_ID(parameter_update));
+    qc_sensor_gyro_sub = orb_subscribe(ORB_ID(sensor_gyro));
 
     /* publications */
     qc_simulink_app_pwm_pub = orb_advertise(ORB_ID(simulink_app_pwm), &qc_pwm_out);
@@ -470,18 +473,19 @@ int qc_ndi_control_thread(int argc, char *argv[])
     /* initialize parameters cache*/
         qc_parameters_update();
 
-    // orb_set_interval(qc_control_state_sub, 4); // Fundamental step size in ms
+		orb_set_interval(qc_sensor_gyro_sub, 1); // Fundamental step size in ms
 
     /* wakeup source: vehicle attitude */
     px4_pollfd_struct_t fds[1];
 
-    fds[0].fd = qc_vehicle_attitude_sub;
+    fds[0].fd = qc_sensor_gyro_sub; // qc_vehicle_attitude_sub; 
     fds[0].events = POLLIN;
 
     qc_thread_running = true;
     /* set leds to disarmed*/
     qc_h_rgbleds.ioctl(RGBLED_SET_MODE, RGBLED_MODE_BREATHE);
     qc_h_rgbleds.ioctl(RGBLED_SET_COLOR, RGBLED_COLOR_GREEN);
+    
     while (!qc_thread_should_exit) {
         /* wait for up to 100ms for data */
         int poll_ret = px4_poll(&fds[0], (sizeof(fds) / sizeof(fds[0])), 100);
@@ -492,7 +496,7 @@ int qc_ndi_control_thread(int argc, char *argv[])
             continue;
         }
         if (poll_ret < 0) {
-            /* this is seriously bqc_qc_qc_qc_qc_qc_qc_qc_qc_qc_qc_qc_qc_rc_inad - should be an emergency */
+            /* this is seriously bad - should be an emergency */
             warn("qc_ndi_control: poll error %d, %d", poll_ret, errno);
             /* sleep a bit before next try */
             usleep(100000);
@@ -506,22 +510,17 @@ int qc_ndi_control_thread(int argc, char *argv[])
             static uint64_t last_run = 0;
             float dt = (hrt_absolute_time() - last_run) / 1000000.0f;
             last_run = hrt_absolute_time();
-
-            /* guard against too small (< 2ms) and too large (> 20ms) dt's */
-            if (dt < 0.002f) {
-                    dt = 0.002f;
-
-            } else if (dt > 0.02f) {
-                    dt = 0.02f;
-            }
+            PX4_WARN("%0.5f",(double)dt);
 
             /* copy attitude topic */
-            orb_copy(ORB_ID(vehicle_attitude), qc_vehicle_attitude_sub, &qc_attitude);
+            orb_copy(ORB_ID(sensor_gyro), qc_sensor_gyro_sub, &qc_sensor_gyro); 
+            // orb_copy(ORB_ID(vehicle_attitude), qc_vehicle_attitude_sub, &qc_attitude);
 
             /* check for updates in other topics */
             qc_parameter_update_poll();
             qc_rc_channels_poll();
             qc_vehicle_local_position_poll();
+            qc_attitude_poll();
           		
             quad_ndi_U.param[0] = _params_qc.att_p[0];
             quad_ndi_U.param[1] = _params_qc.att_p[1];
@@ -571,7 +570,7 @@ int qc_ndi_control_thread(int argc, char *argv[])
 			 else
 				 qc_ndi_arm = false;
 			
-			quad_ndi_step();
+			//quad_ndi_step();
 				
             /* publish actuator controls */
 
@@ -582,8 +581,8 @@ int qc_ndi_control_thread(int argc, char *argv[])
                 qc_pwm_out.pwm[1] = quad_ndi_Y.pwm[1];
                 qc_pwm_out.pwm[2] = quad_ndi_Y.pwm[2];
                 qc_pwm_out.pwm[3] = quad_ndi_Y.pwm[3];
-                qc_h_rgbleds.ioctl(RGBLED_SET_MODE, RGBLED_MODE_BLINK_FAST);
-                qc_h_rgbleds.ioctl(RGBLED_SET_COLOR, RGBLED_COLOR_RED);
+                //qc_h_rgbleds.ioctl(RGBLED_SET_MODE, RGBLED_MODE_BLINK_FAST);
+                //qc_h_rgbleds.ioctl(RGBLED_SET_COLOR, RGBLED_COLOR_RED);
             } else {
                 qc_pwm_out.arm = false;
                 qc_pwm_out.timestamp = hrt_absolute_time();
@@ -591,8 +590,8 @@ int qc_ndi_control_thread(int argc, char *argv[])
                 qc_pwm_out.pwm[1] = 1000;
                 qc_pwm_out.pwm[2] = 1000;
                 qc_pwm_out.pwm[3] = 1000;
-                qc_h_rgbleds.ioctl(RGBLED_SET_MODE, RGBLED_MODE_BREATHE);
-                qc_h_rgbleds.ioctl(RGBLED_SET_COLOR, RGBLED_COLOR_GREEN);
+                //qc_h_rgbleds.ioctl(RGBLED_SET_MODE, RGBLED_MODE_BREATHE);
+                //qc_h_rgbleds.ioctl(RGBLED_SET_COLOR, RGBLED_COLOR_GREEN);
             }
             orb_publish(ORB_ID(simulink_app_pwm), qc_simulink_app_pwm_pub, &qc_pwm_out);
 

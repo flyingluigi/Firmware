@@ -2,7 +2,7 @@
 ## Makefile generated for Simulink model 'hilicopter_NDI_control'. 
 ## 
 ## Makefile     : hilicopter_NDI_control.mk
-## Generated on : Tue Aug 30 17:16:27 2016
+## Generated on : Tue Oct 18 09:05:04 2016
 ## MATLAB Coder version: 3.0 (R2015b)
 ## 
 ## Build Info:
@@ -29,7 +29,7 @@ MATLAB_ROOT               = /Applications/MATLAB_R2015b.app
 MATLAB_BIN                = /Applications/MATLAB_R2015b.app/bin
 MATLAB_ARCH_BIN           = /Applications/MATLAB_R2015b.app/bin/maci64
 MASTER_ANCHOR_DIR         = 
-START_DIR                 = /Users/marcell/Dropbox/Matlab/NDI_vel
+START_DIR                 = /Users/marcell/Dropbox/Matlab/NDI_Control_Octobits
 ARCH                      = maci64
 SOLVER                    = 
 SOLVER_OBJ                = 

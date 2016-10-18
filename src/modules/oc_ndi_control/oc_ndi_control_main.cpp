@@ -754,14 +754,14 @@ int oc_ndi_control_thread(int argc, char *argv[])
             } else {
                 pwm_out.arm = false;
                 pwm_out.timestamp = hrt_absolute_time();
-                pwm_out.pwm[0] = 1000;
-                pwm_out.pwm[1] = 1000;
-                pwm_out.pwm[2] = 1000;
-                pwm_out.pwm[3] = 1000;
-                pwm_out.pwm[4] = 1000;
-                pwm_out.pwm[5] = 1000;
-                pwm_out.pwm[6] = 1000;
-                pwm_out.pwm[7] = 1000;
+                pwm_out.pwm[0] = 900;
+                pwm_out.pwm[1] = 900;
+                pwm_out.pwm[2] = 900;
+                pwm_out.pwm[3] = 900;
+                pwm_out.pwm[4] = 900;
+                pwm_out.pwm[5] = 900;
+                pwm_out.pwm[6] = 900;
+                pwm_out.pwm[7] = 900;
                 h_rgbleds.ioctl(RGBLED_SET_MODE, RGBLED_MODE_BREATHE);
                 h_rgbleds.ioctl(RGBLED_SET_COLOR, RGBLED_COLOR_GREEN);
             }
@@ -787,15 +787,15 @@ int oc_ndi_control_thread(int argc, char *argv[])
 
             perf_end(ndi_loop_perf);
 			/*
-            PX4_WARN("%0.2f %0.2f %0.2f %0.2f %0.2f %0.2f %0.2f %0.2f %0.2f",(double)ndi_debug.debug[3] \
-								  ,(double)ndi_debug.debug[4] \
-								  ,(double)ndi_debug.debug[5] \
-								  ,(double)ndi_debug.debug[6] \
-								  ,(double)ndi_debug.debug[7] \
-								  ,(double)ndi_debug.debug[8] \
-								  ,(double)hilicopter_NDI_control_U.state[0] \
-								  ,(double)hilicopter_NDI_control_U.state[1] \
-								  ,(double)hilicopter_NDI_control_U.state[2]);
+            PX4_WARN("%0.2f %0.2f %0.2f %0.2f %0.2f %0.2f %0.2f %0.2f %0.2f",(double)pwm_out.pwm[0] \
+								  ,(double)pwm_out.pwm[1] \
+								  ,(double)pwm_out.pwm[2] \
+								  ,(double)pwm_out.pwm[3] \
+								  ,(double)pwm_out.pwm[4] \
+								  ,(double)(double)pwm_out.pwm[5] \
+								  ,(double)(double)pwm_out.pwm[6] \
+								  ,(double)(double)pwm_out.pwm[7] \
+								  ,(double)hilicopter_NDI_control_U.pwm_in[4]);
 			
             PX4_WARN("%0.2f %0.2f %0.2f %0.2f %0.2f %0.2f",(double)hilicopter_NDI_control_U.pwm_in[0] \
 								  ,(double)hilicopter_NDI_control_U.pwm_in[1] \

@@ -95,6 +95,9 @@
 
 #include "mpu6000.h"
 
+#include <uORB/uORB.h>
+#include <uORB/topics/fast_gyro.h>
+
 /*
   we set the timer interrupt to run a bit faster than the desired
   sample rate and then throw away duplicates by comparing
@@ -679,6 +682,13 @@ MPU6000::init()
 	_gyro->_gyro_topic = orb_advertise_multi(ORB_ID(sensor_gyro), &grp,
 			     &_gyro->_gyro_orb_class_instance, (is_external()) ? ORB_PRIO_MAX : ORB_PRIO_HIGH);
 
+	/*
+	// Custom message for fast gyro data
+	orb_advert_t fast_gyro_pub;
+	struct fast_gyro_s fast_gyro;
+	fast_gyro_pub = orb_advertise(ORB_ID(fast_gyro), &fast_gyro);
+	*/	 
+				 
 	if (_gyro->_gyro_topic == nullptr) {
 		warnx("ADVERT FAIL");
 	}
@@ -708,8 +718,14 @@ int MPU6000::reset()
 		write_checked_reg(MPUREG_PWR_MGMT_1, MPU_CLK_SEL_PLLGYROZ);
 		up_udelay(1000);
 
-		// Enable I2C bus or Disable I2C bus (recommended on data sheet)
-		write_checked_reg(MPUREG_USER_CTRL, is_i2c() ? 0 : BIT_I2C_IF_DIS);
+		if (is_i2c()) {
+			// Enable I2C bus (recommended on datasheet)
+			write_checked_reg(MPUREG_USER_CTRL, 0);
+
+		} else {
+			// Disable I2C bus (recommended on datasheet)
+			write_checked_reg(MPUREG_USER_CTRL, BIT_I2C_IF_DIS);
+		}
 
 		px4_leave_critical_section(state);
 
@@ -1655,15 +1671,13 @@ void
 MPU6000::start()
 {
 	/* make sure we are stopped first */
-	uint32_t last_call_interval = _call_interval;
 	stop();
-	_call_interval = last_call_interval;
 
 	/* discard any stale data in the buffers */
 	_accel_reports->flush();
 	_gyro_reports->flush();
 
-	if (!is_i2c()) {
+	if (_use_hrt) {
 		/* start polling at the specified rate */
 		hrt_call_every(&_call,
 			       1000,
@@ -1682,7 +1696,7 @@ void
 MPU6000::stop()
 {
 
-	if (!is_i2c()) {
+	if (_use_hrt) {
 		hrt_cancel(&_call);
 
 	} else {
@@ -2052,7 +2066,12 @@ MPU6000::measure()
 		/* publish it */
 		orb_publish(ORB_ID(sensor_gyro), _gyro->_gyro_topic, &grb);
 	}
-
+	/*
+	fast_gyro.x = 1;
+	fast_gyro.y = 1;
+	fast_gyro.z = 1;
+    orb_publish(ORB_ID(fast_gyro), fast_gyro_pub, &fast_gyro);
+*/
 	/* stop measuring */
 	perf_end(_sample_perf);
 	return OK;
