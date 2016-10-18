@@ -350,7 +350,7 @@ MavlinkReceiver::handle_message_command_long(mavlink_message_t *msg)
 
 	if (target_ok) {
 		//check for MAVLINK terminate command
-		if (cmd_mavlink.command == MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN && ((int)cmd_mavlink.param1) == 3) {
+		if (cmd_mavlink.command == MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN && ((int)cmd_mavlink.param1) == 10) {
 			/* This is the link shutdown command, terminate mavlink */
 			warnx("terminated by remote");
 			fflush(stdout);
@@ -433,7 +433,7 @@ MavlinkReceiver::handle_message_command_int(mavlink_message_t *msg)
 
 	if (target_ok) {
 		//check for MAVLINK terminate command
-		if (cmd_mavlink.command == MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN && ((int)cmd_mavlink.param1) == 3) {
+		if (cmd_mavlink.command == MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN && ((int)cmd_mavlink.param1) == 10) {
 			/* This is the link shutdown command, terminate mavlink */
 			warnx("terminated by remote");
 			fflush(stdout);
@@ -788,6 +788,7 @@ MavlinkReceiver::handle_message_set_position_target_local_ned(mavlink_message_t 
 				} else {
 					/* It's not a pure force setpoint: publish to setpoint triplet  topic */
 					struct position_setpoint_triplet_s pos_sp_triplet = {};
+					pos_sp_triplet.timestamp = hrt_absolute_time();
 					pos_sp_triplet.previous.valid = false;
 					pos_sp_triplet.next.valid = false;
 					pos_sp_triplet.current.valid = true;
@@ -1277,9 +1278,9 @@ MavlinkReceiver::handle_message_rc_channels_override(mavlink_message_t *msg)
 
 	struct rc_input_values rc = {};
 
-	rc.timestamp_publication = hrt_absolute_time();
+	rc.timestamp = hrt_absolute_time();
 
-	rc.timestamp_last_signal = rc.timestamp_publication;
+	rc.timestamp_last_signal = rc.timestamp;
 
 	rc.channel_count = 8;
 
@@ -1336,8 +1337,8 @@ MavlinkReceiver::handle_message_manual_control(mavlink_message_t *msg)
 	if (_mavlink->get_manual_input_mode_generation()) {
 
 		struct rc_input_values rc = {};
-		rc.timestamp_publication = hrt_absolute_time();
-		rc.timestamp_last_signal = rc.timestamp_publication;
+		rc.timestamp = hrt_absolute_time();
+		rc.timestamp_last_signal = rc.timestamp;
 
 		rc.channel_count = 8;
 		rc.rc_failsafe = false;
@@ -2078,7 +2079,7 @@ MavlinkReceiver::receive_thread(void *arg)
 	{
 		char thread_name[24];
 		sprintf(thread_name, "mavlink_rcv_if%d", _mavlink->get_instance_id());
-		px4_prctl(PR_SET_NAME, thread_name, getpid());
+		px4_prctl(PR_SET_NAME, thread_name, px4_getpid());
 	}
 
 	const int timeout = 500;

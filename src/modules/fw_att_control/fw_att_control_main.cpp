@@ -108,7 +108,7 @@ public:
 	/**
 	 * Start the main task.
 	 *
-	 * @return	OK on success.
+	 * @return	PX4_OK on success.
 	 */
 	int		start();
 
@@ -344,12 +344,6 @@ private:
 namespace att_control
 {
 
-/* oddly, ERROR is not defined for c++ */
-#ifdef ERROR
-# undef ERROR
-#endif
-static const int ERROR = -1;
-
 FixedwingAttitudeControl	*g_control = nullptr;
 }
 
@@ -583,7 +577,7 @@ FixedwingAttitudeControl::parameters_update()
 	_wheel_ctrl.set_integrator_max(_parameters.w_integrator_max);
 	_wheel_ctrl.set_max_rate(math::radians(_parameters.w_rmax));
 
-	return OK;
+	return PX4_OK;
 }
 
 void
@@ -881,11 +875,11 @@ FixedwingAttitudeControl::task_main()
 
 			/* map flaps by default to manual if valid */
 			if (PX4_ISFINITE(_manual.flaps) && _vcontrol_mode.flag_control_manual_enabled
-			    && fabs(_parameters.flaps_scale) > 0.01) {
+			    && fabsf(_parameters.flaps_scale) > 0.01f) {
 				flap_control = 0.5f * (_manual.flaps + 1.0f) * _parameters.flaps_scale;
 
 			} else if (_vcontrol_mode.flag_control_auto_enabled
-				   && fabs(_parameters.flaps_scale) > 0.01) {
+				   && fabsf(_parameters.flaps_scale) > 0.01f) {
 				flap_control = _att_sp.apply_flaps ? 1.0f * _parameters.flaps_scale : 0.0f;
 			}
 
@@ -902,11 +896,11 @@ FixedwingAttitudeControl::task_main()
 
 			/* map flaperons by default to manual if valid */
 			if (PX4_ISFINITE(_manual.aux2) && _vcontrol_mode.flag_control_manual_enabled
-			    && fabs(_parameters.flaperon_scale) > 0.01) {
+			    && fabsf(_parameters.flaperon_scale) > 0.01f) {
 				flaperon_control = 0.5f * (_manual.aux2 + 1.0f) * _parameters.flaperon_scale;
 
 			} else if (_vcontrol_mode.flag_control_auto_enabled
-				   && fabs(_parameters.flaperon_scale) > 0.01) {
+				   && fabsf(_parameters.flaperon_scale) > 0.01f) {
 				flaperon_control = _att_sp.apply_flaps ? 1.0f * _parameters.flaperon_scale : 0.0f;
 			}
 
@@ -1221,7 +1215,7 @@ FixedwingAttitudeControl::start()
 		return -errno;
 	}
 
-	return OK;
+	return PX4_OK;
 }
 
 int fw_att_control_main(int argc, char *argv[])
@@ -1245,7 +1239,7 @@ int fw_att_control_main(int argc, char *argv[])
 			return 1;
 		}
 
-		if (OK != att_control::g_control->start()) {
+		if (PX4_OK != att_control::g_control->start()) {
 			delete att_control::g_control;
 			att_control::g_control = nullptr;
 			warn("start failed");

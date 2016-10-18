@@ -41,6 +41,8 @@
 #include <netinet/in.h>
 #include <pthread.h>
 
+#include <mathlib/mathlib.h>
+
 extern "C" __EXPORT hrt_abstime hrt_reset(void);
 
 #define SEND_INTERVAL 	20
@@ -114,8 +116,8 @@ void Simulator::send_controls()
 
 static void fill_rc_input_msg(struct rc_input_values *rc, mavlink_rc_channels_t *rc_channels)
 {
-	rc->timestamp_publication = hrt_absolute_time();
-	rc->timestamp_last_signal = hrt_absolute_time();
+	rc->timestamp = hrt_absolute_time();
+	rc->timestamp_last_signal = rc->timestamp;
 	rc->channel_count = rc_channels->chancount;
 	rc->rssi = rc_channels->rssi;
 
@@ -216,7 +218,7 @@ void Simulator::handle_message(mavlink_message_t *msg, bool publish)
 
 			uint64_t sim_timestamp = imu.time_usec;
 			struct timespec ts;
-			px4_clock_gettime(CLOCK_REALTIME, &ts);
+			px4_clock_gettime(CLOCK_MONOTONIC, &ts);
 			uint64_t timestamp = ts.tv_sec * 1000 * 1000 + ts.tv_nsec / 1000;
 
 			perf_set_elapsed(_perf_sim_delay, timestamp - sim_timestamp);
@@ -301,7 +303,43 @@ void Simulator::handle_message(mavlink_message_t *msg, bool publish)
 		}
 
 		break;
+
+	case MAVLINK_MSG_ID_HIL_STATE_QUATERNION:
+		mavlink_hil_state_quaternion_t hil_state;
+		mavlink_msg_hil_state_quaternion_decode(msg, &hil_state);
+
+		uint64_t timestamp = hrt_absolute_time();
+
+		/* attitude */
+		struct vehicle_attitude_s hil_attitude = {};
+		{
+			hil_attitude.timestamp = timestamp;
+
+			math::Quaternion q(hil_state.attitude_quaternion);
+			math::Matrix<3, 3> C_nb = q.to_dcm();
+			math::Vector<3> euler = C_nb.to_euler();
+
+			hil_attitude.q[0] = q(0);
+			hil_attitude.q[1] = q(1);
+			hil_attitude.q[2] = q(2);
+			hil_attitude.q[3] = q(3);
+			hil_attitude.q_valid = true;
+
+			hil_attitude.roll = euler(0);
+			hil_attitude.pitch = euler(1);
+			hil_attitude.yaw = euler(2);
+
+			hil_attitude.rollspeed = hil_state.rollspeed;
+			hil_attitude.pitchspeed = hil_state.pitchspeed;
+			hil_attitude.yawspeed = hil_state.yawspeed;
+
+			// always publish ground truth attitude message
+			int hilstate_multi;
+			orb_publish_auto(ORB_ID(vehicle_attitude_groundtruth), &_attitude_pub, &hil_attitude, &hilstate_multi, ORB_PRIO_HIGH);
+		}
+		break;
 	}
+
 }
 
 void Simulator::send_mavlink_message(const uint8_t msgid, const void *msg, uint8_t component_ID)
@@ -513,6 +551,7 @@ void Simulator::pollForMAVLinkMessages(bool publish, int udp_port)
 	// this is important for the UDP communication to work
 	int pret = -1;
 	PX4_INFO("Waiting for initial data on UDP port %i. Please start the flight simulator to proceed..", udp_port);
+	fflush(stdout);
 
 	uint64_t pstart_time = 0;
 
