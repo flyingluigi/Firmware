@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'quad_ndi'.
  *
- * Model version                  : 1.78
+ * Model version                  : 1.315
  * Simulink Coder version         : 8.9 (R2015b) 13-Aug-2015
- * C/C++ source code generated on : Thu Sep 01 16:38:06 2016
+ * C/C++ source code generated on : Tue Nov 22 18:03:18 2016
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex
@@ -24,6 +24,7 @@
 #endif                                 /* quad_ndi_COMMON_INCLUDES_ */
 
 #include "quad_ndi_types.h"
+#include "rt_defines.h"
 #include "rt_nonfinite.h"
 #include "rtGetInf.h"
 
@@ -38,32 +39,21 @@
 
 /* Block states (auto storage) for system '<Root>' */
 typedef struct {
-  real32_T Integrator_DSTATE;          /* '<S1>/Integrator' */
-  real32_T FilterState_DSTATE;         /* '<S1>/Filter State' */
-  real32_T Integrator_DSTATE_o;        /* '<S2>/Integrator' */
-  real32_T FilterState_DSTATE_n;       /* '<S2>/Filter State' */
+  real32_T rates_int[3];               /* '<Root>/rate_control' */
+  real32_T rates_prev[3];              /* '<Root>/rate_control' */
 } DW_quad_ndi_T;
-
-/* Constant parameters (auto storage) */
-typedef struct {
-  /* Computed Parameter: Tnm_Gain
-   * Referenced by: '<S7>/Tnm'
-   */
-  real32_T Tnm_Gain[16];
-} ConstP_quad_ndi_T;
 
 /* External inputs (root inport signals with auto storage) */
 typedef struct {
-  real32_T attitude[3];                /* '<Root>/attitude' */
-  real32_T rates[3];                   /* '<Root>/rates' */
-  real32_T u_cmd[4];                   /* '<Root>/u_cmd' */
-  real32_T param[24];                  /* '<Root>/param' */
+  real32_T state[15];                  /* '<Root>/state' */
+  real32_T pwm_in[8];                  /* '<Root>/pwm_in' */
+  real32_T param[45];                  /* '<Root>/param' */
 } ExtU_quad_ndi_T;
 
 /* External outputs (root outports fed by signals with auto storage) */
 typedef struct {
-  uint16_T pwm[4];                     /* '<Root>/pwm' */
-  real32_T debug[3];                   /* '<Root>/debug' */
+  real32_T pwm[4];                     /* '<Root>/pwm' */
+  real32_T debug[4];                   /* '<Root>/debug' */
 } ExtY_quad_ndi_T;
 
 /* Real-time Model Data Structure */
@@ -79,9 +69,6 @@ extern ExtU_quad_ndi_T quad_ndi_U;
 
 /* External outputs (root outports fed by signals with auto storage) */
 extern ExtY_quad_ndi_T quad_ndi_Y;
-
-/* Constant parameters (auto storage) */
-extern const ConstP_quad_ndi_T quad_ndi_ConstP;
 
 /* Model entry point functions */
 extern void quad_ndi_initialize(void);
@@ -106,14 +93,58 @@ extern RT_MODEL_quad_ndi_T *const quad_ndi_M;
  * Here is the system hierarchy for this model
  *
  * '<Root>' : 'quad_ndi'
- * '<S1>'   : 'quad_ndi/Discrete_PID_measurement_D'
- * '<S2>'   : 'quad_ndi/Discrete_PID_measurement_D1'
- * '<S3>'   : 'quad_ndi/NDI LAW'
- * '<S4>'   : 'quad_ndi/PID Controller1'
- * '<S5>'   : 'quad_ndi/PID Controller2'
- * '<S6>'   : 'quad_ndi/PID Controller5'
- * '<S7>'   : 'quad_ndi/um2pwm'
- * '<S8>'   : 'quad_ndi/um2pwm/un2n'
+ * '<S1>'   : 'quad_ndi/Deadband'
+ * '<S2>'   : 'quad_ndi/Deadband1'
+ * '<S3>'   : 'quad_ndi/Discrete_PID_measurement_D'
+ * '<S4>'   : 'quad_ndi/MATLAB Function'
+ * '<S5>'   : 'quad_ndi/NDI LAW'
+ * '<S6>'   : 'quad_ndi/Subsystem'
+ * '<S7>'   : 'quad_ndi/Subsystem1'
+ * '<S8>'   : 'quad_ndi/angle_control'
+ * '<S9>'   : 'quad_ndi/attitude_controler'
+ * '<S10>'  : 'quad_ndi/commander_logic'
+ * '<S11>'  : 'quad_ndi/mixer'
+ * '<S12>'  : 'quad_ndi/mode select'
+ * '<S13>'  : 'quad_ndi/mode_logic_attitude'
+ * '<S14>'  : 'quad_ndi/mode_logic_autoland'
+ * '<S15>'  : 'quad_ndi/mode_logic_velocity'
+ * '<S16>'  : 'quad_ndi/mode_select_thrust'
+ * '<S17>'  : 'quad_ndi/mode_select_z'
+ * '<S18>'  : 'quad_ndi/omega_control'
+ * '<S19>'  : 'quad_ndi/position_control'
+ * '<S20>'  : 'quad_ndi/position_logic'
+ * '<S21>'  : 'quad_ndi/rate_control'
+ * '<S22>'  : 'quad_ndi/reset_logic'
+ * '<S23>'  : 'quad_ndi/saturation'
+ * '<S24>'  : 'quad_ndi/select_u'
+ * '<S25>'  : 'quad_ndi/select_x1'
+ * '<S26>'  : 'quad_ndi/um2pwm'
+ * '<S27>'  : 'quad_ndi/velocity_control'
+ * '<S28>'  : 'quad_ndi/attitude_controler/PID Controller1'
+ * '<S29>'  : 'quad_ndi/attitude_controler/PID Controller2'
+ * '<S30>'  : 'quad_ndi/attitude_controler/PID Controller3'
+ * '<S31>'  : 'quad_ndi/mode_logic_attitude/Compare To Constant3'
+ * '<S32>'  : 'quad_ndi/mode_logic_velocity/Compare To Constant3'
+ * '<S33>'  : 'quad_ndi/mode_logic_velocity/VKn2VKpsi'
+ * '<S34>'  : 'quad_ndi/omega_control/Discrete_PID_measurement_D'
+ * '<S35>'  : 'quad_ndi/omega_control/Discrete_PID_measurement_D1'
+ * '<S36>'  : 'quad_ndi/omega_control/Discrete_PID_measurement_D2'
+ * '<S37>'  : 'quad_ndi/position_control/position_setpoint'
+ * '<S38>'  : 'quad_ndi/position_control/x_pos'
+ * '<S39>'  : 'quad_ndi/position_control/y_pos'
+ * '<S40>'  : 'quad_ndi/position_control/z_pos'
+ * '<S41>'  : 'quad_ndi/reset_logic/Detect Fall Nonpositive'
+ * '<S42>'  : 'quad_ndi/reset_logic/Detect Rise Positive'
+ * '<S43>'  : 'quad_ndi/reset_logic/Detect Fall Nonpositive/Nonpositive'
+ * '<S44>'  : 'quad_ndi/reset_logic/Detect Rise Positive/Positive'
+ * '<S45>'  : 'quad_ndi/um2pwm/un2n'
+ * '<S46>'  : 'quad_ndi/velocity_control/MATLAB Function'
+ * '<S47>'  : 'quad_ndi/velocity_control/PID Controller'
+ * '<S48>'  : 'quad_ndi/velocity_control/PID Controller1'
+ * '<S49>'  : 'quad_ndi/velocity_control/PID Controller2'
+ * '<S50>'  : 'quad_ndi/velocity_control/PID Controller/Clamping circuit'
+ * '<S51>'  : 'quad_ndi/velocity_control/PID Controller1/Clamping circuit'
+ * '<S52>'  : 'quad_ndi/velocity_control/PID Controller2/Clamping circuit'
  */
 #endif                                 /* RTW_HEADER_quad_ndi_h_ */
 

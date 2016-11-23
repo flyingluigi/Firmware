@@ -522,6 +522,8 @@ void Logger::add_default_topics()
 	add_topic("vehicle_land_detected");
 	add_topic("simulink_app_pwm");
 	add_topic("simulink_app_debug");
+	add_topic("vehicle_land_detected");
+	
 }
 
 int Logger::add_topics_from_file(const char *fname)

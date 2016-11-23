@@ -71,10 +71,8 @@ LandDetector::~LandDetector()
 int LandDetector::start()
 {
 	_taskShouldExit = false;
-
 	/* schedule a cycle to start things */
 	work_queue(HPWORK, &_work, (worker_t)&LandDetector::_cycle_trampoline, this, 0);
-
 	return 0;
 }
 
@@ -87,12 +85,11 @@ void
 LandDetector::_cycle_trampoline(void *arg)
 {
 	LandDetector *dev = reinterpret_cast<LandDetector *>(arg);
-
 	dev->_cycle();
 }
 
 void LandDetector::_cycle()
-{
+{	
 	if (!_taskIsRunning) {
 		// Advertise the first land detected uORB.
 		_landDetected.timestamp = hrt_absolute_time();
@@ -121,12 +118,13 @@ void LandDetector::_cycle()
 	if ((_landDetectedPub == nullptr) ||
 	    (_landDetected.landed != landDetected) ||
 	    (_landDetected.freefall != freefallDetected)) {
-
+		
 		_landDetected.timestamp = hrt_absolute_time();
 		_landDetected.landed = (_state == LandDetectionState::LANDED);
 		_landDetected.freefall = (_state == LandDetectionState::FREEFALL);
 
 		int instance;
+        
 		orb_publish_auto(ORB_ID(vehicle_land_detected), &_landDetectedPub, &_landDetected,
 				 &instance, ORB_PRIO_DEFAULT);
 	}

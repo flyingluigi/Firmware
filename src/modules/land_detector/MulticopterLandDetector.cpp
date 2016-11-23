@@ -138,6 +138,7 @@ bool MulticopterLandDetector::_get_freefall_state()
 
 bool MulticopterLandDetector::_get_landed_state()
 {
+	 
 	// Time base for this function
 	const uint64_t now = hrt_absolute_time();
 
@@ -159,7 +160,7 @@ bool MulticopterLandDetector::_get_landed_state()
 	}
 
 	// only trigger flight conditions if we are armed
-	if (!_arming.armed) {
+	if (!_ctrl_mode.flag_armed) {
 		_arming_time = 0;
 
 		return true;
@@ -219,8 +220,8 @@ bool MulticopterLandDetector::_get_landed_state()
 	bool rotating = (fabsf(_vehicleAttitude.rollspeed)  > maxRotationScaled) ||
 			(fabsf(_vehicleAttitude.pitchspeed) > maxRotationScaled) ||
 			(fabsf(_vehicleAttitude.yawspeed) > maxRotationScaled);
-
-
+	
+	
 	if (verticalMovement || rotating || !minimalThrust || horizontalMovement) {
 		// Sensed movement or thottle high, so reset the land detector.
 		return false;

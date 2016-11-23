@@ -39,6 +39,7 @@
 #include "Subscription.hpp"
 #include "topics/parameter_update.h"
 #include "topics/actuator_controls.h"
+#include "topics/actuator_armed.h"
 #include "topics/vehicle_gps_position.h"
 #include "topics/satellite_info.h"
 #include "topics/sensor_combined.h"

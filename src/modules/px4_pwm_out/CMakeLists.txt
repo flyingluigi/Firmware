@@ -39,7 +39,7 @@ px4_add_module(
 	STACK_MAIN 1200
 	STACK_MAX 1600
 	SRCS
-		px4_pwm_out.c
+		px4_pwm_out.cpp
 	DEPENDS
 		platforms__common
 	)

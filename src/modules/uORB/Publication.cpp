@@ -42,6 +42,7 @@
 #include "topics/vehicle_global_position.h"
 #include "topics/debug_key_value.h"
 #include "topics/actuator_controls.h"
+#include "topics/actuator_armed.h"
 #include "topics/vehicle_global_velocity_setpoint.h"
 #include "topics/vehicle_attitude_setpoint.h"
 #include "topics/vehicle_rates_setpoint.h"

@@ -117,7 +117,7 @@ static int land_detector_start(const char *mode)
 
 	} else if (!strcmp(mode, "multicopter")) {
 		land_detector_task = new MulticopterLandDetector();
-
+		
 	} else if (!strcmp(mode, "vtol")) {
 		land_detector_task = new VtolLandDetector();
 
@@ -180,7 +180,6 @@ int land_detector_main(int argc, char *argv[])
 			PX4_WARN("land_detector start failed");
 			return 1;
 		}
-
 		return 0;
 	}
 

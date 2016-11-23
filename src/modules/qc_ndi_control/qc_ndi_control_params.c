@@ -3,13 +3,13 @@
  *   Copyright (c) 2013-2016 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following coQCtions
+ * modification, are permitted provided that the following conditions
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of coQCtions and the following disclaimer.
+ *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of coQCtions and the following disclaimer in
+ *    notice, this list of conditions and the following disclaimer in
  *    the documentation and/or other materials provided with the
  *    distribution.
  * 3. Neither the name PX4 nor the names of its contributors may be
@@ -20,7 +20,7 @@
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
  * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, IQCRECT,
+ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
  * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
  * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
  * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
@@ -32,53 +32,47 @@
  ****************************************************************************/
 
 /**
- * @file oc_ndi_control.params.c
- * Quadcopter Control algorithm parameters.
+ * @file oc_ndi_control_params.c
+ * quadcopter NDI Control algorithm parameters.
  *
  * @author Marcell Mocher <marcell.mocher@fh-joanneum.at>
  */
 
 /**
- * Roll P gain
+ * Roll PID gain
  *
- * Roll proportional gain
+ * Roll PID gains
  *
  *
  * @min 0.00
  * @max 15
- * @decimal 3
- * @increment 0.001
- * @group Octocopter QC Control
+ * @decimal 2
+ * @increment 0.01
+ * @group QC_ NDI Control
  */
-PARAM_DEFINE_FLOAT(QC_ROLL_P, 0.5f);
+PARAM_DEFINE_FLOAT(QC_ROLL_P, 0.4f);
+PARAM_DEFINE_FLOAT(QC_ROLL_I, 0.0f);
+PARAM_DEFINE_FLOAT(QC_ROLL_D, 0.0f);
+PARAM_DEFINE_FLOAT(QC_ROLL_N, 50.0f);
 
 /**
- * Rollrate P gain
+ * Rollrate PID gains
  *
  * Rollrate proportional gain
  *
  *
  * @min 0.00
  * @max 15
- * @decimal 3
- * @increment 0.001
- * @group Octocopter QC Control
+ * @decimal 2
+ * @increment 0.01
+ * @group quadcopter NDI Control
  */
 PARAM_DEFINE_FLOAT(QC_ROLLRATE_P, 0.1f);
+PARAM_DEFINE_FLOAT(QC_ROLLRATE_I, 0.0f);
+PARAM_DEFINE_FLOAT(QC_ROLLRATE_D, 0.0f);
+PARAM_DEFINE_FLOAT(QC_ROLLRATE_N, 50.0f);
 
-/**
- * Roll Feedforward P gain
- *
- * Roll Feedforward proportional gain
- *
- *
- * @min 0.00
- * @max 15
- * @decimal 3
- * @increment 0.001
- * @group Octocopter QC Control
- */
-PARAM_DEFINE_FLOAT(QC_ROLLRATE_FF, 1.0f);
+
 
 /**
  * Pitch P gain
@@ -88,12 +82,14 @@ PARAM_DEFINE_FLOAT(QC_ROLLRATE_FF, 1.0f);
  *
  * @min 0.00
  * @max 15
- * @decimal 3
- * @increment 0.001
- * @group Octocopter QC Control
+ * @decimal 2
+ * @increment 0.01
+ * @group quadcopter NDI Control
  */
-PARAM_DEFINE_FLOAT(QC_PITCH_P, 0.5f);
-
+PARAM_DEFINE_FLOAT(QC_PITCH_P, 0.4f);
+PARAM_DEFINE_FLOAT(QC_PITCH_I, 0.0f);
+PARAM_DEFINE_FLOAT(QC_PITCH_D, 0.0f);
+PARAM_DEFINE_FLOAT(QC_PITCH_N, 50.0f);
 /**
  * Pitchrate P gain
  *
@@ -102,67 +98,50 @@ PARAM_DEFINE_FLOAT(QC_PITCH_P, 0.5f);
  *
  * @min 0.00
  * @max 15
- * @decimal 3
- * @increment 0.001
- * @group Octocopter QC Control
+ * @decimal 2
+ * @increment 0.01
+ * @group quadcopter NDI Control
  */
 PARAM_DEFINE_FLOAT(QC_PITCHRATE_P, 0.1f);
+PARAM_DEFINE_FLOAT(QC_PITCHRATE_I, 0.0f);
+PARAM_DEFINE_FLOAT(QC_PITCHRATE_D, 0.0f);
+PARAM_DEFINE_FLOAT(QC_PITCHRATE_N, 50.0f);
+
+
 
 /**
- * Pitch Feedforward P gain
+ * Yaw PID gain
  *
- * Pitch Feedforward proportional gain
+ * Yaw pid gain
  *
  *
  * @min 0.00
  * @max 15
- * @decimal 3
- * @increment 0.001
- * @group Octocopter QC Control
- */
-PARAM_DEFINE_FLOAT(QC_PITCHRATE_FF, 1.0f);
-
-/**
- * Yaw P gain
- *
- * Yaw proportional gain
- *
- *
- * @min 0.00
- * @max 15
- * @decimal 3
- * @increment 0.001
- * @group Octocopter QC Control
+ * @decimal 2
+ * @increment 0.01
+ * @group quadcopter NDI Control
  */
 PARAM_DEFINE_FLOAT(QC_YAW_P, 0.5f);
+PARAM_DEFINE_FLOAT(QC_YAW_I, 0.0f);
+PARAM_DEFINE_FLOAT(QC_YAW_D, 0.0f);
+PARAM_DEFINE_FLOAT(QC_YAW_N, 50.0f);
 
 /**
- * Yawrate P gain
+ * Yawrate PID gain
  *
- * Yawrate proportional gain
+ * Yawrate pid gain
  *
  *
  * @min 0.00
  * @max 15
- * @decimal 3
- * @increment 0.001
- * @group Octocopter QC Control
+ * @decimal 2
+ * @increment 0.01
+ * @group quadcopter NDI Control
  */
-PARAM_DEFINE_FLOAT(QC_YAWRATE_P, 0.1f);
-
-/**
- * Yaw Feedforward P gain
- *
- * Yaw Feedforward proportional gain
- *
- *
- * @min 0.00
- * @max 1
- * @decimal 3
- * @increment 0.001
- * @group Octocopter QC Control
- */
-PARAM_DEFINE_FLOAT(QC_YAWRATE_FF, 0.0f);
+PARAM_DEFINE_FLOAT(QC_YAWRATE_P, 0.2f);
+PARAM_DEFINE_FLOAT(QC_YAWRATE_I, 0.0f);
+PARAM_DEFINE_FLOAT(QC_YAWRATE_D, 0.0f);
+PARAM_DEFINE_FLOAT(QC_YAWRATE_N, 50.0f);
 
 
 /**
@@ -175,9 +154,9 @@ PARAM_DEFINE_FLOAT(QC_YAWRATE_FF, 0.0f);
  * @max 1
  * @decimal 4
  * @increment 0.0001
- * @group Octocopter QC Control
+ * @group quadcopter NDI Control
  */
-PARAM_DEFINE_FLOAT(QC_MODEL_IXX, 0.1f);
+PARAM_DEFINE_FLOAT(QC_MODEL_IXX, 0.002f);
 
 /**
  * Moment of inertia IYY
@@ -189,9 +168,9 @@ PARAM_DEFINE_FLOAT(QC_MODEL_IXX, 0.1f);
  * @max 1
  * @decimal 4
  * @increment 0.0001
- * @group Octocopter QC Control
+ * @group quadcopter NDI Control
  */
-PARAM_DEFINE_FLOAT(QC_MODEL_IYY, 0.1f);
+PARAM_DEFINE_FLOAT(QC_MODEL_IYY, 0.002f);
 
 /**
  * Moment of inertia IZZ
@@ -203,9 +182,9 @@ PARAM_DEFINE_FLOAT(QC_MODEL_IYY, 0.1f);
  * @max 1
  * @decimal 4
  * @increment 0.0001
- * @group Octocopter QC Control
+ * @group quadcopter NDI Control
  */
-PARAM_DEFINE_FLOAT(QC_MODEL_IZZ, 0.2f);
+PARAM_DEFINE_FLOAT(QC_MODEL_IZZ, 0.003f);
 
 
 /**
@@ -216,9 +195,9 @@ PARAM_DEFINE_FLOAT(QC_MODEL_IZZ, 0.2f);
  *
  * @min 0.00
  * @max 15
- * @decimal 3
- * @increment 0.001
- * @group Octocopter QC Control
+ * @decimal 2
+ * @increment 0.01
+ * @group quadcopter NDI Control
  */
 PARAM_DEFINE_FLOAT(QC_VELX_P, 1.0f);
 
@@ -231,9 +210,9 @@ PARAM_DEFINE_FLOAT(QC_VELX_P, 1.0f);
  *
  * @min 0.00
  * @max 15
- * @decimal 3
- * @increment 0.001
- * @group Octocopter QC Control
+ * @decimal 2
+ * @increment 0.01
+ * @group quadcopter NDI Control
  */
 PARAM_DEFINE_FLOAT(QC_VELY_P, 1.0f);
 
@@ -246,9 +225,9 @@ PARAM_DEFINE_FLOAT(QC_VELY_P, 1.0f);
  *
  * @min 0.00
  * @max 15
- * @decimal 3
- * @increment 0.001
- * @group Octocopter QC Control
+ * @decimal 2
+ * @increment 0.01
+ * @group quadcopter NDI Control
  */
 PARAM_DEFINE_FLOAT(QC_VELZ_P, 1.0f);
 
@@ -262,11 +241,11 @@ PARAM_DEFINE_FLOAT(QC_VELZ_P, 1.0f);
  *
  * @min 0.00
  * @max 15
- * @decimal 3
- * @increment 0.001
- * @group Octocopter QC Control
+ * @decimal 2
+ * @increment 0.01
+ * @group quadcopter NDI Control
  */
-PARAM_DEFINE_FLOAT(QC_VELX_I, 0.0f);
+PARAM_DEFINE_FLOAT(QC_VELX_I, 0.1f);
 
 /**
  *  Y Velocity Control I gain
@@ -276,11 +255,11 @@ PARAM_DEFINE_FLOAT(QC_VELX_I, 0.0f);
  *
  * @min 0.00
  * @max 15
- * @decimal 3
- * @increment 0.001
- * @group Octocopter QC Control
+ * @decimal 2
+ * @increment 0.01
+ * @group quadcopter NDI Control
  */
-PARAM_DEFINE_FLOAT(QC_VELY_I, 0.2f);
+PARAM_DEFINE_FLOAT(QC_VELY_I, 0.1f);
 
 /**
  *  Z Velocity Control I gain
@@ -289,13 +268,44 @@ PARAM_DEFINE_FLOAT(QC_VELY_I, 0.2f);
  *
  *
  * @min 0.00
- * @max 250
- * @decimal 3
- * @increment 0.001
- * @group Octocopter QC Control
+ * @max 15
+ * @decimal 2
+ * @increment 0.01
+ * @group quadcopter NDI Control
  */
-PARAM_DEFINE_FLOAT(QC_VELZ_I, 50.0f);
+PARAM_DEFINE_FLOAT(QC_VELZ_I, 0.1f);
 
+
+/**
+ *  XYZ Velocity Control D gain
+ *
+ *  XYZ Velocity Control derivative gain
+ *
+ *
+ * @min 0.00
+ * @max 15
+ * @decimal 2
+ * @increment 0.01
+ * @group quadcopter NDI Control
+ */
+PARAM_DEFINE_FLOAT(QC_VELX_D, 0.0f);
+PARAM_DEFINE_FLOAT(QC_VELY_D, 0.0f);
+PARAM_DEFINE_FLOAT(QC_VELZ_D, 0.0f);
+
+/**
+ *  XYZ Velocity Control N Filter Value
+ *
+ *
+ *
+ * @min 0
+ * @max 200
+ * @decimal 2
+ * @increment 0.01
+ * @group quadcopter NDI Control
+ */
+PARAM_DEFINE_FLOAT(QC_VELX_N, 50.0f);
+PARAM_DEFINE_FLOAT(QC_VELY_N, 50.0f);
+PARAM_DEFINE_FLOAT(QC_VELZ_N, 50.0f);
 
 /**
  *  X Position Control P gain
@@ -304,9 +314,9 @@ PARAM_DEFINE_FLOAT(QC_VELZ_I, 50.0f);
  *
  * @min 0.00
  * @max 15
- * @decimal 3
- * @increment 0.001
- * @group Octocopter QC Control
+ * @decimal 2
+ * @increment 0.01
+ * @group quadcopter NDI Control
  */
 PARAM_DEFINE_FLOAT(QC_POSX_P, 1.0f);
 
@@ -317,9 +327,9 @@ PARAM_DEFINE_FLOAT(QC_POSX_P, 1.0f);
  *
  * @min 0.00
  * @max 15
- * @decimal 3
- * @increment 0.001
- * @group Octocopter QC Control
+ * @decimal 2
+ * @increment 0.01
+ * @group quadcopter NDI Control
  */
 PARAM_DEFINE_FLOAT(QC_POSY_P, 1.0f);
 
@@ -330,9 +340,9 @@ PARAM_DEFINE_FLOAT(QC_POSY_P, 1.0f);
  *
  * @min 0.00
  * @max 15
- * @decimal 3
- * @increment 0.001
- * @group Octocopter QC Control
+ * @decimal 2
+ * @increment 0.01
+ * @group quadcopter NDI Control
  */
 PARAM_DEFINE_FLOAT(QC_POSZ_P, 1.0f);
 
@@ -343,12 +353,12 @@ PARAM_DEFINE_FLOAT(QC_POSZ_P, 1.0f);
  * Maximum rate command in deg
  *
  * @min 0
- * @max 250
+ * @max 160
  * @decimal 0
  * @increment 1
- * @group Octocopter QC Control
+ * @group quadcopter NDI Control
  */
-PARAM_DEFINE_FLOAT(QC_MAX_RATE, 180.0f);
+PARAM_DEFINE_FLOAT(QC_MAX_RATE, 90.0f);
 
 
 
@@ -358,12 +368,12 @@ PARAM_DEFINE_FLOAT(QC_MAX_RATE, 180.0f);
  * Maximum angle command in deg
  *
  * @min 0
- * @max 90
+ * @max 60
  * @decimal 0
  * @increment 1
- * @group Octocopter QC Control
+ * @group quadcopter NDI Control
  */
-PARAM_DEFINE_FLOAT(QC_MAX_ANGLE, 60.0f);
+PARAM_DEFINE_FLOAT(QC_MAX_ANGLE, 45.0f);
 
 
 /**
@@ -375,6 +385,6 @@ PARAM_DEFINE_FLOAT(QC_MAX_ANGLE, 60.0f);
  * @max 15
  * @decimal 1
  * @increment 0.1
- * @group Octocopter QC Control
+ * @group quadcopter NDI Control
  */
-PARAM_DEFINE_FLOAT(QC_MAX_Velocity, 5.0f);
+PARAM_DEFINE_FLOAT(QC_MAX_VEL, 5.0f);
