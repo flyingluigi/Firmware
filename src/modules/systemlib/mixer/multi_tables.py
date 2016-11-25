@@ -146,6 +146,17 @@ octa_plus = [
     [  90, CW],
 ]
 
+octa_hili = [
+    [   0, CW],
+    [  45, CW],
+    [  90, CCW],
+    [ 135, CCW],
+    [ 180, CW],
+    [-135, CW],
+    [ -90, CCW],
+    [ -45, CCW],
+]
+
 octa_cox = [
     [  45, CCW],
     [ -45, CW],
@@ -180,7 +191,7 @@ tri_y = [
 ]
 
 
-tables = [quad_x, quad_h, quad_plus, quad_v, quad_wide, quad_deadcat, hex_x, hex_plus, hex_cox, octa_x, octa_plus, octa_cox, octa_cox_wide, twin_engine, tri_y]
+tables = [quad_x, quad_h, quad_plus, quad_v, quad_wide, quad_deadcat, hex_x, hex_plus, hex_cox, octa_x, octa_plus, octa_hili, octa_cox, octa_cox_wide, twin_engine, tri_y]
 
 def variableName(variable):
     for variableName, value in list(globals().items()):

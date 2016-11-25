@@ -35,5 +35,7 @@ bool disable_mc_yaw_control			# control yaw for mc (used for vtol weather-vane m
 
 bool apply_flaps
 
+float32[2] hor_force_sp 		# Desired horizontal force in body frame
+
 # WAS vehicle_attitude_setpoint mc_virtual_attitude_setpoint fw_virtual_attitude_setpoint
 # TOPICS vehicle_attitude_setpoint

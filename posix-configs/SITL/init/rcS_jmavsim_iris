@@ -1,6 +1,6 @@
 uorb start
 param load
-param set MAV_TYPE 2
+param set MAV_TYPE 14
 param set SYS_AUTOSTART 4010
 param set SYS_RESTART_TYPE 2
 dataman start
@@ -61,7 +61,7 @@ navigator start
 ekf2 start
 mc_pos_control start
 mc_att_control start
-mixer load /dev/pwm_output0 ../../../../ROMFS/px4fmu_common/mixers/quad_x.main.mix
+mixer load /dev/pwm_output0 ../../../../ROMFS/px4fmu_common/mixers/octo_hili.main.mix
 mavlink start -u 14556 -r 2000000
 mavlink start -u 14557 -r 2000000 -m onboard -o 14540
 mavlink stream -r 80 -s POSITION_TARGET_LOCAL_NED -u 14556
