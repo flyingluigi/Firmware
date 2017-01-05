@@ -71,7 +71,7 @@ Mixer::get_control(uint8_t group, uint8_t index)
 
 	return value;
 }
-
+	
 
 float
 Mixer::scale(const mixer_scaler_s &scaler, float input)

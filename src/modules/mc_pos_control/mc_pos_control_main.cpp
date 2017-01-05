@@ -253,6 +253,7 @@ private:
 	math::Vector<3> _vel_prev;			/**< velocity on previous step */
 	math::Vector<3> _vel_ff;
 	math::Vector<3> _vel_sp_prev;
+	math::Vector<3> _thrust_sp_body;
 	math::Vector<3> _thrust_sp_prev;
 	math::Vector<3> _vel_err_d;		/**< derivative of current velocity */
 
@@ -431,8 +432,8 @@ MulticopterPositionControl::MulticopterPositionControl() :
 	_vel_ff.zero();
 	_vel_sp_prev.zero();
 	_vel_err_d.zero();
-
 	_R.identity();
+	_thrust_sp_body.zero();
 
 	_params_handles.thr_min		= param_find("MPC_THR_MIN");
 	_params_handles.thr_max		= param_find("MPC_THR_MAX");
@@ -1625,7 +1626,7 @@ MulticopterPositionControl::task_main()
 
 					/* velocity error */
 					math::Vector<3> vel_err = _vel_sp - _vel;
-
+ 
 					// check if we have switched from a non-velocity controlled mode into a velocity controlled mode
 					// if yes, then correct xy velocity setpoint such that the attitude setpoint is continuous
 					if (!control_vel_enabled_prev && _control_mode.flag_control_velocity_enabled) {
@@ -1651,7 +1652,7 @@ MulticopterPositionControl::task_main()
 					} else {
 						thrust_sp = vel_err.emult(_params.vel_p) + _vel_err_d.emult(_params.vel_d) + thrust_int;
 					}
-
+					
 					if (_pos_sp_triplet.current.type == position_setpoint_s::SETPOINT_TYPE_TAKEOFF
 							&& !_takeoff_jumped && !_control_mode.flag_control_manual_enabled) {
 						// for jumped takeoffs use special thrust setpoint calculated above
@@ -1830,7 +1831,7 @@ MulticopterPositionControl::task_main()
 							thrust_int(2) = 0.0f;
 						}
 					}
-
+					
 					/* calculate attitude setpoint from thrust vector */
 					if (_control_mode.flag_control_velocity_enabled || _control_mode.flag_control_acceleration_enabled) {
 						/* desired body_z axis = -normalize(thrust_vector) */
@@ -1918,8 +1919,35 @@ MulticopterPositionControl::task_main()
 					_local_pos_sp.acc_y = thrust_sp(1) * ONE_G;
 					_local_pos_sp.acc_z = thrust_sp(2) * ONE_G;
 
-					_att_sp.timestamp = hrt_absolute_time();
-
+		 		    _thrust_sp_body = _R.transposed() * thrust_sp;
+				    _att_sp.timestamp = hrt_absolute_time();
+		
+					if(fabs(thrust_sp(0)) <= 0.2f){
+						_att_sp.hor_force_sp[0] = _thrust_sp_body(0) * 2.0f;
+						_att_sp.pitch_body = 0.0f;
+					} else {
+						_att_sp.hor_force_sp[0] = 0.0f;
+					}
+					
+					if(fabs(thrust_sp(1)) <= 0.2f){
+						_att_sp.hor_force_sp[1] = _thrust_sp_body(1) * 2.0f;
+						_att_sp.roll_body = 0.0f;
+					} else {
+						_att_sp.hor_force_sp[1] = 0.0f;
+					}
+					
+					R.from_euler(_att_sp.roll_body, _att_sp.pitch_body, _att_sp.yaw_body);
+					/* copy rotation matrix to attitude setpoint topic */
+					memcpy(&_att_sp.R_body[0], R.data, sizeof(_att_sp.R_body));
+					_att_sp.R_valid = true;
+					/* copy quaternion setpoint to attitude setpoint topic */
+					math::Quaternion q_sp;
+					q_sp.from_dcm(R);
+					memcpy(&_att_sp.q_d[0], &q_sp.data[0], sizeof(_att_sp.q_d));
+					
+		
+		   			PX4_WARN("VEL: %.4f %.4f %.4f",(double)_vel_sp(0),(double)_vel_sp(1),(double)_vel_sp(2));		
+		   			PX4_WARN("SP: %.4f %.4f %.4f",(double)thrust_sp(0),(double)thrust_sp(1),(double)thrust_sp(2));
 
 				} else {
 					reset_int_z = true;
@@ -2063,7 +2091,7 @@ MulticopterPositionControl::task_main()
 			reset_yaw_sp = true;
 			_att_sp.yaw_sp_move_rate = 0.0f;
 		}
-
+	
 		/* update previous velocity for velocity controller D part */
 		_vel_prev = _vel;
 

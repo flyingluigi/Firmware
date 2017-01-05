@@ -42,6 +42,8 @@ add_custom_target(mixer_gen
 
 px4_add_module(
 	MODULE modules__systemlib__mixer
+	COMPILE_FLAGS
+		-Wno-unused-variable
 	SRCS
 		mixer.cpp
 		mixer_group.cpp

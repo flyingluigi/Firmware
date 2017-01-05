@@ -523,13 +523,14 @@ private:
 	float				_pitch_scale;
 	float				_yaw_scale;
 	float				_idle_speed;
+	bool				_is_hilicopter;
 
 	orb_advert_t			_limits_pub;
 	multirotor_motor_limits_s 	_limits;
 
 	unsigned			_rotor_count;
 	const Rotor			*_rotors;
-
+	
 	/* do not allow to copy due to ptr data members */
 	MultirotorMixer(const MultirotorMixer &);
 	MultirotorMixer operator=(const MultirotorMixer &);

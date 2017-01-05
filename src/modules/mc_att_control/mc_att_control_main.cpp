@@ -827,11 +827,7 @@ MulticopterAttitudeControl::control_attitude_rates(float dt)
 void
 MulticopterAttitudeControl::control_horizontal_velocity(float dt){
 	
-	/* set horizontal velocity to setpoint*/
-	_hor_force_control(0) = 0.0f;  // FX
-	_hor_force_control(1) = 0.0f;  //_ctrl_state.pitch_rate; // FY
-	math::constrain(_hor_force_control(0), -4.0f, 4.0f);
-	math::constrain(_hor_force_control(1), -4.0f, 4.0f);
+
 }
 
 
@@ -933,26 +929,27 @@ MulticopterAttitudeControl::task_main()
 					R_sp.set(_v_att_sp.R_body);
 					//_v_control_mode.flag_control_horizonforce_enabled = true;
 					/* Check if system is in horizontal force mode*/
+					
+					_v_control_mode.flag_control_horizonforce_enabled = true;
+					_v_control_mode.flag_control_horizonvelocity_enabled = true;
+					
 					if (_v_control_mode.flag_control_horizonforce_enabled) {
 						/* set the attitude setpoint to zero roll/pitch angle */
-						math::Vector<3> euler_angles;
-						euler_angles = R_sp.to_euler();
-						R_sp.from_euler(0, 0, euler_angles(2)); //TODO implement offsets for trimming!
+						 //TODO implement offsets for trimming!
 						/* If system is not in horizontal velocity mode do manual force control */
 						if (_v_control_mode.flag_control_horizonvelocity_enabled) {
 							
 							/* Get the setpoints from vehicle setpoint message*/
+							_hor_force_sp(0) = math::constrain(_v_att_sp.hor_force_sp[0], -1.0f, 1.0f);
+							_hor_force_sp(1) = math::constrain(_v_att_sp.hor_force_sp[1], -1.0f, 1.0f);
 							
-							/*Here should be the velocity controller or so*/
-							
-							_hor_force_sp(0) = math::constrain(_v_att_sp.hor_force_sp[0], -_params.hor_f_max, _params.hor_f_max);
-							_hor_force_sp(1) = math::constrain(_v_att_sp.hor_force_sp[1], -_params.hor_f_max, _params.hor_f_max);
-							
-						} else {
-							
+						} else {			
+							math::Vector<3> euler_angles;
+							euler_angles = R_sp.to_euler();
+							R_sp.from_euler(0.0f, 0.0f, euler_angles(2));
 							/* Get the setpoints from manual control*/
-							_hor_force_sp(0) = _manual_control_sp.x * _params.hor_f_max; // Fx force command
-							_hor_force_sp(1) = _manual_control_sp.y * _params.hor_f_max; // Fy force command
+							_hor_force_sp(0) = _manual_control_sp.x; // Fx force command
+							_hor_force_sp(1) = _manual_control_sp.y; // Fy force command
 						}
 						
 						_hor_force_control(0) = _hor_force_sp(0);  // FX
@@ -1036,8 +1033,9 @@ MulticopterAttitudeControl::task_main()
 				_actuators.control[1] = (PX4_ISFINITE(_att_control(1))) ? _att_control(1) : 0.0f;
 				_actuators.control[2] = (PX4_ISFINITE(_att_control(2))) ? _att_control(2) : 0.0f;
 				_actuators.control[3] = (PX4_ISFINITE(_thrust_sp)) ? _thrust_sp : 0.0f;
-				_actuators.velocity[0] = (PX4_ISFINITE(_hor_force_control(0))) ? _hor_force_control(0) : 0.0f;
-				_actuators.velocity[1] = (PX4_ISFINITE(_hor_force_control(1))) ? _hor_force_control(1) : 0.0f;
+				_actuators.control[8] = (PX4_ISFINITE(_hor_force_control(0))) ? _hor_force_control(0) : 0.0f;
+				_actuators.control[9] = (PX4_ISFINITE(_hor_force_control(1))) ? _hor_force_control(1) : 0.0f;
+				//PX4_WARN("Force: %.2f",(double)_hor_force_control(0));
 				_actuators.timestamp = hrt_absolute_time();
 				_actuators.timestamp_sample = _ctrl_state.timestamp;
 
