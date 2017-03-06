@@ -418,3 +418,16 @@ PARAM_DEFINE_FLOAT(MC_TPA_SLOPE, 1.0f);
  * @group Multicopter Attitude Control
  */
 PARAM_DEFINE_INT32(MC_BAT_SCALE_EN, 0);
+
+
+/**
+ * Additional constant angular momentum due to spinning parts, kgm²/s 
+ *
+ *
+ * @min -2.0
+ * @max  2.0
+ * @decimal 3
+ * @increment 0.01
+ * @group Multicopter Attitude Control
+ */
+PARAM_DEFINE_FLOAT(MC_LSB_Z, 0.0f);

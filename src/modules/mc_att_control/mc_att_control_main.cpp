@@ -214,6 +214,7 @@ private:
 
 		param_t bat_scale_en;
 
+                param_t lsb_z;
 	}		_params_handles;		/**< handles for interesting parameters */
 
 	struct {
@@ -240,6 +241,7 @@ private:
 		float vtol_wv_yaw_rate_scale;			/**< Scale value [0, 1] for yaw rate setpoint  */
 
 		int bat_scale_en;
+                float lsb_z;
 	}		_params;
 
 	TailsitterRecovery *_ts_opt_recovery;	/**< Computes optimal rates for tailsitter recovery */
@@ -378,7 +380,7 @@ MulticopterAttitudeControl::MulticopterAttitudeControl() :
 	_params.vtol_opt_recovery_enabled = false;
 	_params.vtol_wv_yaw_rate_scale = 1.0f;
 	_params.bat_scale_en = 0;
-
+        _params.lsb_z = 0.0f;
 	_rates_prev.zero();
 	_rates_sp.zero();
 	_rates_sp_prev.zero();
@@ -420,7 +422,7 @@ MulticopterAttitudeControl::MulticopterAttitudeControl() :
 	_params_handles.vtol_opt_recovery_enabled	= param_find("VT_OPT_RECOV_EN");
 	_params_handles.vtol_wv_yaw_rate_scale		= param_find("VT_WV_YAWR_SCL");
 	_params_handles.bat_scale_en		= param_find("MC_BAT_SCALE_EN");
-
+        _params_handles.lsb_z = param_find("MC_LSB_Z");
 
 
 	/* fetch initial parameter values */
@@ -553,6 +555,9 @@ MulticopterAttitudeControl::parameters_update()
 	param_get(_params_handles.bat_scale_en, &_params.bat_scale_en);
 
 	_actuators_0_circuit_breaker_enabled = circuit_breaker_enabled("CBRK_RATE_CTRL", CBRK_RATE_CTRL_KEY);
+
+        param_get(_params_handles.lsb_z, &v);
+        _params.lsb_z = v;
 
 	return OK;
 }
@@ -818,6 +823,44 @@ MulticopterAttitudeControl::control_attitude_rates(float dt)
 	_att_control = _params.rate_p.emult(rates_err * tpa) + _params.rate_d.emult(_rates_prev - rates) / dt + _rates_int +
 		       _params.rate_ff.emult(_rates_sp);
 
+        /*Custom Code for External angular momentum*/
+        math::Vector<3> I_model(0.03f,0.03f,0.05f);
+
+        math::Vector<3> Lsb(0.0f,0.0f,0.0f);
+        Lsb(2) = _params.lsb_z;
+
+        math::Vector<3> Mn_max(5.0f,5.0f,1.0f);
+
+        math::Vector<3> cmD(0.01f,0.01f,0.01f);
+
+        math::Vector<3> Cd;
+        Cd = rates.emult(cmD);
+        Cd = Cd.edivide(Mn_max);
+
+        /* limit Cd */
+        for (int i = 0; i < 3; i++) {
+                Cd(i) = math::constrain(Cd(i), -1.0f,1.0f);
+        }
+
+        math::Vector<3> att_ndi;
+        att_ndi = rates % (I_model.emult(rates));
+        att_ndi = att_ndi.edivide(Mn_max);
+
+        /* limit att_ndi */
+        for (int i = 0; i < 3; i++) {
+                att_ndi(i) = math::constrain(att_ndi(i), -1.0f,1.0f);
+        }
+
+        math::Vector<3> att_lsb;
+        att_lsb = rates % Lsb;
+        att_lsb = att_lsb.edivide(Mn_max);
+
+        /* limit att_lsb */
+        for (int i = 0; i < 3; i++) {
+                att_lsb(i) = math::constrain(att_lsb(i),  -1.0f,1.0f);
+        }
+
+        _att_control = _att_control + Cd + att_ndi + att_lsb;
 	_rates_sp_prev = _rates_sp;
 	_rates_prev = rates;
 
