@@ -68,8 +68,6 @@
 #include <arch/board/board.h>
 #include <uORB/uORB.h>
 #include <uORB/topics/vehicle_attitude_setpoint.h>
-#include <uORB/topics/mc_virtual_attitude_setpoint.h>
-#include <uORB/topics/fw_virtual_attitude_setpoint.h>
 #include <uORB/topics/manual_control_setpoint.h>
 #include <uORB/topics/actuator_controls.h>
 #include <uORB/topics/vehicle_rates_setpoint.h>
@@ -147,11 +145,10 @@ private:
 	orb_advert_t	_v_rates_sp_pub;		/**< rate setpoint publication */
 	orb_advert_t	_actuators_0_pub;		/**< attitude actuator controls publication */
 	orb_advert_t	_controller_status_pub;	/**< controller status publication */
-	
+
 	orb_id_t _rates_sp_id;	/**< pointer to correct rates setpoint uORB metadata structure */
 	orb_id_t _actuators_id;	/**< pointer to correct actuator controls0 uORB metadata structure */
-	
-	
+
 	bool		_actuators_0_circuit_breaker_enabled;	/**< circuit breaker to suppress output */
 
 	struct control_state_s				_ctrl_state;		/**< control state */
@@ -171,13 +168,12 @@ private:
 	math::Vector<3>		_rates_prev;	/**< angular rates on previous step */
 	math::Vector<3>		_rates_sp_prev; /**< previous rates setpoint */
 	math::Vector<3>		_rates_sp;		/**< angular rates setpoint */
-	math::Vector<2>		_hor_force_sp;	/**< horizontal force setpoint */
 	math::Vector<3>		_rates_int;		/**< angular rates integral error */
 	float				_thrust_sp;		/**< thrust setpoint */
 	math::Vector<3>		_att_control;	/**< attitude control vector */
 	math::Vector<2>		_hor_force_control;	/**< horizontal force control vector */
+
 	math::Matrix<3, 3>  _I;				/**< identity matrix */
-	math::Matrix<3, 3>	R_sp;			/**< attitude setpoint */
 
 	struct {
 		param_t roll_p;
@@ -211,9 +207,6 @@ private:
 		param_t pitch_tc;
 		param_t vtol_opt_recovery_enabled;
 		param_t vtol_wv_yaw_rate_scale;
-		
-		param_t horizontal_force_max;
-		param_t horizontal_force_enable;
 
 	}		_params_handles;		/**< handles for interesting parameters */
 
@@ -236,10 +229,6 @@ private:
 		int vtol_type;						/**< 0 = Tailsitter, 1 = Tiltrotor, 2 = Standard airframe */
 		bool vtol_opt_recovery_enabled;
 		float vtol_wv_yaw_rate_scale;			/**< Scale value [0, 1] for yaw rate setpoint  */
-		
-		float hor_f_max;	/**< horicontal force command limit in horizontal force mode */
-		bool  hor_f_enable; /**< horicontal force enable flag */
-		
 	}		_params;
 
 	TailsitterRecovery *_ts_opt_recovery;	/**< Computes optimal rates for tailsitter recovery */
@@ -285,10 +274,6 @@ private:
 	void		control_attitude(float dt);
 
 	/**
- 	* Horizontal velocity controller.
- 	*/
-	void		control_horizontal_velocity(float dt);
-	/**
 	 * Attitude rates controller.
 	 */
 	void		control_attitude_rates(float dt);
@@ -324,6 +309,7 @@ MulticopterAttitudeControl::MulticopterAttitudeControl() :
 
 	_task_should_exit(false),
 	_control_task(-1),
+
 	/* subscriptions */
 	_ctrl_state_sub(-1),
 	_v_att_sp_sub(-1),
@@ -339,11 +325,9 @@ MulticopterAttitudeControl::MulticopterAttitudeControl() :
 	_controller_status_pub(nullptr),
 	_rates_sp_id(0),
 	_actuators_id(0),
+
 	_actuators_0_circuit_breaker_enabled(false),
 
-
-	
-	
 	/* performance counters */
 	_loop_perf(perf_alloc(PC_ELAPSED, "mc_att_control")),
 	_controller_latency_perf(perf_alloc_once(PC_ELAPSED, "ctrl_latency")),
@@ -377,19 +361,17 @@ MulticopterAttitudeControl::MulticopterAttitudeControl() :
 	_params.rattitude_thres = 1.0f;
 	_params.vtol_opt_recovery_enabled = false;
 	_params.vtol_wv_yaw_rate_scale = 1.0f;
-	_params.hor_f_max = 4.0f;
-	_params.hor_f_enable = false;
+
 
 	_rates_prev.zero();
 	_rates_sp.zero();
 	_rates_sp_prev.zero();
 	_rates_int.zero();
-	_hor_force_sp.zero();
 	_thrust_sp = 0.0f;
 	_att_control.zero();
 	_hor_force_control.zero();
 	_I.identity();
-	R_sp.zero();
+
 	_params_handles.roll_p			= 	param_find("MC_ROLL_P");
 	_params_handles.roll_rate_p		= 	param_find("MC_ROLLRATE_P");
 	_params_handles.roll_rate_i		= 	param_find("MC_ROLLRATE_I");
@@ -419,9 +401,8 @@ MulticopterAttitudeControl::MulticopterAttitudeControl() :
 	_params_handles.pitch_tc		= 	param_find("MC_PITCH_TC");
 	_params_handles.vtol_opt_recovery_enabled	= param_find("VT_OPT_RECOV_EN");
 	_params_handles.vtol_wv_yaw_rate_scale		= param_find("VT_WV_YAWR_SCL");
-	
-	_params_handles.horizontal_force_max	= param_find("MC_HOR_F_MAX");
-	_params_handles.horizontal_force_enable		= param_find("MC_HOR_FORCE");
+
+
 
 
 	/* fetch initial parameter values */
@@ -547,17 +528,6 @@ MulticopterAttitudeControl::parameters_update()
 
 	_actuators_0_circuit_breaker_enabled = circuit_breaker_enabled("CBRK_RATE_CTRL", CBRK_RATE_CTRL_KEY);
 
-
-	param_get(_params_handles.horizontal_force_max,&v);
-	_params.hor_f_max = v;
-
-	int hor_vel;
-	param_get(_params_handles.horizontal_force_enable, &hor_vel);
-	if(hor_vel > 22026){
-	_params.hor_f_enable = true;
-	} else _params.hor_f_enable = false;
-	
-	
 	return OK;
 }
 
@@ -682,7 +652,13 @@ MulticopterAttitudeControl::vehicle_motor_limits_poll()
 void
 MulticopterAttitudeControl::control_attitude(float dt)
 {
+	vehicle_attitude_setpoint_poll();
+
 	_thrust_sp = _v_att_sp.thrust;
+
+	/* construct attitude setpoint rotation matrix */
+	math::Matrix<3, 3> R_sp;
+	R_sp.set(_v_att_sp.R_body);
 
 	/* get current rotation matrix from control state quaternions */
 	math::Quaternion q_att(_ctrl_state.q[0], _ctrl_state.q[1], _ctrl_state.q[2], _ctrl_state.q[3]);
@@ -819,18 +795,6 @@ MulticopterAttitudeControl::control_attitude_rates(float dt)
 	}
 }
 
-/*
- * Horizontal Velocity Controller.
- * Input: '_hor_vel_sp' vector
- * Output: '_hor_force_control' vector
- */
-void
-MulticopterAttitudeControl::control_horizontal_velocity(float dt){
-	
-
-}
-
-
 void
 MulticopterAttitudeControl::task_main_trampoline(int argc, char *argv[])
 {
@@ -920,47 +884,15 @@ MulticopterAttitudeControl::task_main()
 
 			if (_v_control_mode.flag_control_attitude_enabled) {
 
+
+				/* Get the setpoints from vehicle setpoint message*/
+				_hor_force_control(0) = math::constrain(_v_att_sp.hor_force_sp[0], -1.0f, 1.0f);
+				_hor_force_control(1) = math::constrain(_v_att_sp.hor_force_sp[1], -1.0f, 1.0f);
+				
 				if (_ts_opt_recovery == nullptr) {
 					// the  tailsitter recovery instance has not been created, thus, the vehicle
 					// is not a tailsitter, do normal attitude control
-					
-					vehicle_attitude_setpoint_poll();
-					/* set the normal attitude setpoint rotation matrix */
-					R_sp.set(_v_att_sp.R_body);
-					//_v_control_mode.flag_control_horizonforce_enabled = true;
-					/* Check if system is in horizontal force mode*/
-					
-					_v_control_mode.flag_control_horizonforce_enabled = true;
-					_v_control_mode.flag_control_horizonvelocity_enabled = true;
-					
-					if (_v_control_mode.flag_control_horizonforce_enabled) {
-						/* set the attitude setpoint to zero roll/pitch angle */
-						 //TODO implement offsets for trimming!
-						/* If system is not in horizontal velocity mode do manual force control */
-						if (_v_control_mode.flag_control_horizonvelocity_enabled) {
-							
-							/* Get the setpoints from vehicle setpoint message*/
-							_hor_force_sp(0) = math::constrain(_v_att_sp.hor_force_sp[0], -1.0f, 1.0f);
-							_hor_force_sp(1) = math::constrain(_v_att_sp.hor_force_sp[1], -1.0f, 1.0f);
-							
-						} else {			
-							math::Vector<3> euler_angles;
-							euler_angles = R_sp.to_euler();
-							R_sp.from_euler(0.0f, 0.0f, euler_angles(2));
-							/* Get the setpoints from manual control*/
-							_hor_force_sp(0) = _manual_control_sp.x; // Fx force command
-							_hor_force_sp(1) = _manual_control_sp.y; // Fy force command
-						}
-						
-						_hor_force_control(0) = _hor_force_sp(0);  // FX
-						_hor_force_control(1) = _hor_force_sp(1);  // FY
-						
-					} else {
-						_hor_force_control(0) = 0.0;  // No horizontal force commanded
-						_hor_force_control(1) = 0.0;  // No horizontal force commanded
-					}
-					
-					
+			
 					control_attitude(dt);
 
 				} else {
@@ -994,6 +926,11 @@ MulticopterAttitudeControl::task_main()
 				//}
 
 			} else {
+
+				/* Get the setpoints from vehicle setpoint message*/
+				_hor_force_control(0) = 0.0f;
+				_hor_force_control(1) = 0.0f;
+				
 				/* attitude controller disabled, poll rates setpoint topic */
 				if (_v_control_mode.flag_control_manual_enabled) {
 					/* manual rates control - ACRO mode */
@@ -1035,7 +972,6 @@ MulticopterAttitudeControl::task_main()
 				_actuators.control[3] = (PX4_ISFINITE(_thrust_sp)) ? _thrust_sp : 0.0f;
 				_actuators.control[8] = (PX4_ISFINITE(_hor_force_control(0))) ? _hor_force_control(0) : 0.0f;
 				_actuators.control[9] = (PX4_ISFINITE(_hor_force_control(1))) ? _hor_force_control(1) : 0.0f;
-				//PX4_WARN("Force: %.2f",(double)_hor_force_control(0));
 				_actuators.timestamp = hrt_absolute_time();
 				_actuators.timestamp_sample = _ctrl_state.timestamp;
 

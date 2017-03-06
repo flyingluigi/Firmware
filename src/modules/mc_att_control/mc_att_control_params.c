@@ -375,28 +375,3 @@ PARAM_DEFINE_FLOAT(MC_ACRO_Y_MAX, 360.0f);
  * @group Multicopter Attitude Control
  */
 PARAM_DEFINE_FLOAT(MC_RATT_TH, 1.0f);
-
-
-/**
- * Activate Horizontal Force Control 
- *
- * Setting this paramterer to 22027 will enable horizontal force control mode
- *
- * @reboot_required true
- * @min 0
- * @max 22027
- * @group Multicopter Attitude Control
- */
-PARAM_DEFINE_INT32(MC_HOR_FORCE, 0);
-
-
-/**
- * Max horizontal force to command
- *
- * @min 0.1
- * @max 8.0
- * @decimal 1
- * @increment 0.1
- * @group Multicopter Attitude Control
- */
-PARAM_DEFINE_FLOAT(MC_HOR_F_MAX, 4.0f);

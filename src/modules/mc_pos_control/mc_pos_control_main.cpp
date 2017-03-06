@@ -198,7 +198,8 @@ private:
 		param_t hold_max_z;
 		param_t acc_hor_max;
 		param_t alt_mode;
-
+		param_t horizontal_force_max;
+		param_t horizontal_force_enable;
 	}		_params_handles;		/**< handles for interesting parameters */
 
 	struct {
@@ -222,6 +223,8 @@ private:
 		float acc_hor_max;
 		float vel_max_up;
 		float vel_max_down;
+		float hor_f_max;	/**< horicontal force command limit in horizontal force mode */
+		bool  hor_f_enable; /**< horicontal force enable flag */
 		uint32_t alt_mode;
 
 		math::Vector<3> pos_p;
@@ -423,7 +426,8 @@ MulticopterPositionControl::MulticopterPositionControl() :
 	_params.vel_cruise.zero();
 	_params.vel_ff.zero();
 	_params.sp_offs_max.zero();
-
+	_params.hor_f_max = 4.0f;
+	_params.hor_f_enable = false;
 	_pos.zero();
 	_pos_sp.zero();
 	_vel.zero();
@@ -476,7 +480,9 @@ MulticopterPositionControl::MulticopterPositionControl() :
 	_params_handles.hold_max_z = param_find("MPC_HOLD_MAX_Z");
 	_params_handles.acc_hor_max = param_find("MPC_ACC_HOR_MAX");
 	_params_handles.alt_mode = param_find("MPC_ALT_MODE");
-
+	_params_handles.horizontal_force_max	= param_find("MC_HOR_F_MAX");
+	_params_handles.horizontal_force_enable		= param_find("MC_HOR_FORCE");
+	
 	/* fetch initial parameter values */
 	parameters_update(true);
 }
@@ -613,6 +619,15 @@ MulticopterPositionControl::parameters_update(bool force)
 		/* takeoff and land velocities should not exceed maximum */
 		_params.tko_speed = fminf(_params.tko_speed, _params.vel_max_up);
 		_params.land_speed = fminf(_params.land_speed, _params.vel_max_down);
+		
+		param_get(_params_handles.horizontal_force_max,&v);
+		_params.hor_f_max = v;
+		
+		int hor_vel;
+		param_get(_params_handles.horizontal_force_enable, &hor_vel);
+		if(hor_vel > 22026){
+		_params.hor_f_enable = true;
+		} else _params.hor_f_enable = false;
 	}
 
 	return OK;
@@ -2015,11 +2030,24 @@ MulticopterPositionControl::task_main()
 					_att_sp.yaw_body = yaw_target;
 				}
 			}
-
+			
 			/* control roll and pitch directly if we no aiding velocity controller is active */
 			if (!_control_mode.flag_control_velocity_enabled) {
+				
 				_att_sp.roll_body = _manual.y * _params.man_roll_max;
 				_att_sp.pitch_body = -_manual.x * _params.man_pitch_max;
+				
+				_control_mode.flag_control_horizonforce_enabled = true;
+				if(_control_mode.flag_control_horizonforce_enabled){
+					_att_sp.roll_body = 0.0f;
+					_att_sp.pitch_body = 0.0f;
+					_att_sp.hor_force_sp[0] = _manual.x;
+					_att_sp.hor_force_sp[1] = _manual.y;
+				} else{
+					_att_sp.hor_force_sp[0] = 0.0f;
+					_att_sp.hor_force_sp[1] = 0.0f;
+				}
+				
 			}
 
 			/* control throttle directly if no climb rate controller is active */
