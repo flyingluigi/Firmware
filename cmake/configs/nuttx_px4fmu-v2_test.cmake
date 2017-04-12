@@ -39,7 +39,7 @@ set(config_module_list
 	drivers/meas_airspeed
 	drivers/frsky_telemetry
 	modules/sensors
-	#drivers/mkblctrl
+	drivers/mkblctrl
 	drivers/px4flow
 	#drivers/oreoled
 	#drivers/vmount
@@ -72,16 +72,16 @@ set(config_module_list
 	#
 	# Testing
 	#
-	drivers/sf0x/sf0x_tests
-	drivers/test_ppm
+#	drivers/sf0x/sf0x_tests
+#	drivers/test_ppm
 	#lib/rc/rc_tests
-	modules/commander/commander_tests
-	modules/mc_pos_control/mc_pos_control_tests
-	modules/controllib_test
-	modules/mavlink/mavlink_tests
-	modules/unit_test
-	modules/uORB/uORB_tests
-	systemcmds/tests
+#	modules/commander/commander_tests
+#	modules/mc_pos_control/mc_pos_control_tests
+#	modules/controllib_test
+#	modules/mavlink/mavlink_tests
+#	modules/unit_test
+#	modules/uORB/uORB_tests
+#	systemcmds/tests
 
 	#
 	# General system control
@@ -98,9 +98,10 @@ set(config_module_list
 	# Estimation modules
 	#
 	modules/attitude_estimator_q
-	#modules/position_estimator_inav
+	modules/position_estimator_inav
 	modules/local_position_estimator
 	modules/ekf2
+	examples/attitude_estimator_ekf
 
 	#
 	# Vehicle Control
@@ -110,12 +111,12 @@ set(config_module_list
 	modules/mc_att_control
 	modules/mc_pos_control
 	modules/vtol_att_control
-
+	
 	#
 	# Logging
 	#
-	#modules/logger
-	#modules/sdlog2
+	modules/logger
+	modules/sdlog2
 
 	#
 	# Library modules
