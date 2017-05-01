@@ -517,7 +517,7 @@ public:
 
 	virtual unsigned		mix(float *outputs, unsigned space, uint16_t *status_reg);
 	virtual void			groups_required(uint32_t &groups);
-
+	
 private:
 	float				_roll_scale;
 	float				_pitch_scale;

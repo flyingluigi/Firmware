@@ -44,6 +44,7 @@ px4_add_module(
 	MODULE modules__systemlib__mixer
 	COMPILE_FLAGS
 		-Wno-unused-variable
+		-Wno-float-equal
 	SRCS
 		mixer.cpp
 		mixer_group.cpp
