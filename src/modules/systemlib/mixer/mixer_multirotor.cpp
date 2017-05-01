@@ -270,7 +270,7 @@ MultirotorMixer::mix(float *outputs, unsigned space, uint16_t *status_reg)
 
 		/* Testcase */
 		
-		fy = 1.0f;
+		//fy = 1.0f;
 			
 		/* Testcase */
 
