@@ -1933,10 +1933,11 @@ MulticopterPositionControl::task_main()
 					_local_pos_sp.acc_x = thrust_sp(0) * ONE_G;
 					_local_pos_sp.acc_y = thrust_sp(1) * ONE_G;
 					_local_pos_sp.acc_z = thrust_sp(2) * ONE_G;
-
+					
 		 		    _thrust_sp_body = _R.transposed() * thrust_sp;
 				    _att_sp.timestamp = hrt_absolute_time();
-		
+					/*
+					//HILICOPTER
 					if(fabs(thrust_sp(0)) <= 0.2f){
 						_att_sp.hor_force_sp[0] = _thrust_sp_body(0) * 2.0f;
 						_att_sp.pitch_body = 0.0f;
@@ -1952,10 +1953,8 @@ MulticopterPositionControl::task_main()
 					}
 					
 					R.from_euler(_att_sp.roll_body, _att_sp.pitch_body, _att_sp.yaw_body);
-					/* copy rotation matrix to attitude setpoint topic */
 					memcpy(&_att_sp.R_body[0], R.data, sizeof(_att_sp.R_body));
 					_att_sp.R_valid = true;
-					/* copy quaternion setpoint to attitude setpoint topic */
 					math::Quaternion q_sp;
 					q_sp.from_dcm(R);
 					memcpy(&_att_sp.q_d[0], &q_sp.data[0], sizeof(_att_sp.q_d));
@@ -1963,7 +1962,7 @@ MulticopterPositionControl::task_main()
 		
 		   			PX4_WARN("VEL: %.4f %.4f %.4f",(double)_vel_sp(0),(double)_vel_sp(1),(double)_vel_sp(2));		
 		   			PX4_WARN("SP: %.4f %.4f %.4f",(double)thrust_sp(0),(double)thrust_sp(1),(double)thrust_sp(2));
-
+					*/
 				} else {
 					reset_int_z = true;
 				}
@@ -2037,7 +2036,7 @@ MulticopterPositionControl::task_main()
 				_att_sp.roll_body = _manual.y * _params.man_roll_max;
 				_att_sp.pitch_body = -_manual.x * _params.man_pitch_max;
 				
-				_control_mode.flag_control_horizonforce_enabled = true;
+				//_control_mode.flag_control_horizonforce_enabled = true; //HILICOPTER
 				if(_control_mode.flag_control_horizonforce_enabled){
 					_att_sp.roll_body = 0.0f;
 					_att_sp.pitch_body = 0.0f;
