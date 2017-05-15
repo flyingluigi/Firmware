@@ -33,10 +33,26 @@
 px4_add_module(
 	MODULE modules__mc_pos_control
 	MAIN mc_pos_control
-	COMPILE_FLAGS -Os
-	STACK_MAIN 1200
+	COMPILE_FLAGS
+		-Wno-float-equal
+		-Wno-unused-variable
+	STACK_MAIN 4000
 	SRCS
 		mc_pos_control_main.cpp
+		ndi_control/ndi_control.cpp
+		ndi_control/ndi_control_initialize.cpp
+		ndi_control/ndi_control_terminate.cpp
+		ndi_control/rt_nonfinite.cpp
+		ndi_control/rtGetInf.cpp
+		ndi_control/rtGetNaN.cpp
+		ndi_control/svd1.cpp
+		ndi_control/xaxpy.cpp
+		ndi_control/xdotc.cpp
+		ndi_control/xnrm2.cpp
+		ndi_control/xrot.cpp
+		ndi_control/xrotg.cpp
+		ndi_control/xscal.cpp
+		ndi_control/xswap.cpp
 	DEPENDS
 		platforms__common
 	)

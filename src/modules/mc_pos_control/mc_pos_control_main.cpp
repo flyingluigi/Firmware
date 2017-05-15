@@ -88,6 +88,12 @@
 #include <controllib/blocks.hpp>
 #include <controllib/block/BlockParam.hpp>
 
+#include "ndi_control/rt_nonfinite.h"
+#include "ndi_control/ndi_control.h"
+#include "ndi_control/ndi_control_terminate.h"
+#include "ndi_control/ndi_control_initialize.h"
+
+
 #define TILT_COS_MAX	0.7f
 #define SIGMA			0.000001f
 #define MIN_DIST		0.01f
@@ -348,6 +354,22 @@ private:
 	 * Main sensor collection task.
 	 */
 	void		task_main();
+	
+	/**
+ 	* routine for direct manual horizontal force commands
+ 	*/
+	void		manual_hor_force();
+	
+	/**
+ 	* routine for automatic horizontal force control with PX4 velocity controller
+ 	*/
+	void		px4_hor_force();
+	
+	/**
+ 	* routine for automatic horizontal force control with simulink velocity controller
+ 	*/
+	void		automatic_hor_force();
+	
 };
 
 namespace pos_control
@@ -510,6 +532,83 @@ MulticopterPositionControl::~MulticopterPositionControl()
 
 	pos_control::g_control = nullptr;
 }
+
+/**
+* manual force control included in manual mode line: 2062
+*/
+void 
+MulticopterPositionControl::manual_hor_force()
+{
+	_control_mode.flag_control_horizonforce_enabled = true; //HILICOPTER MODE! 
+	if(_control_mode.flag_control_horizonforce_enabled){
+		_att_sp.roll_body  = 0.0f;
+		_att_sp.pitch_body = 0.0f;
+		_att_sp.hor_force_sp[0] = _manual.x;
+		_att_sp.hor_force_sp[1] = _manual.y;
+	} else{
+		_att_sp.hor_force_sp[0] = 0.0f;
+		_att_sp.hor_force_sp[1] = 0.0f;
+	}
+}
+
+/**
+* automatic horizontal force control with px4 velocity controller line 2015
+*/
+void 
+MulticopterPositionControl::px4_hor_force()
+{
+    float x_state[12];
+    float vel_dot_ref[3];
+    float vel_ff[3] = {0,0,0};
+    float max_bank = 0.6981317f;
+	float mass = 3.5f;
+	float kt_max = 11.0f;
+	float kmt = 0.001f;
+	float gf =  0.707107f;
+	float tilt_angle = 0.6981317f;
+	float acc_com[3] = {0,0,0};
+	
+    ndi_control(x_state, vel_dot_ref, vel_ff, max_bank, mass, tilt_angle,tilt_angle, kt_max, kmt, gf, acc_com);
+				
+	// void ndi_control(const float x[12], const float vel_dot_ref[3], const float vel_ff[3], float max_bank, float mass, float L, float delta, float kT_max, float kMT, float gf, float acc_com[3])
+				
+	/*
+	//HILICOPTER
+	if(fabs(thrust_sp(0)) <= 0.2f){
+		_att_sp.hor_force_sp[0] = _thrust_sp_body(0) * 2.0f;
+		_att_sp.pitch_body = 0.0f;
+	} else {
+		_att_sp.hor_force_sp[0] = 0.0f;
+	}
+	
+	if(fabs(thrust_sp(1)) <= 0.2f){
+		_att_sp.hor_force_sp[1] = _thrust_sp_body(1) * 2.0f;
+		_att_sp.roll_body = 0.0f;
+	} else {
+		_att_sp.hor_force_sp[1] = 0.0f;
+	}
+	
+	R.from_euler(_att_sp.roll_body, _att_sp.pitch_body, _att_sp.yaw_body);
+	memcpy(&_att_sp.R_body[0], R.data, sizeof(_att_sp.R_body));
+	_att_sp.R_valid = true;
+	math::Quaternion q_sp;
+	q_sp.from_dcm(R);
+	memcpy(&_att_sp.q_d[0], &q_sp.data[0], sizeof(_att_sp.q_d));
+	
+
+	PX4_WARN("VEL: %.4f %.4f %.4f",(double)_vel_sp(0),(double)_vel_sp(1),(double)_vel_sp(2));		
+	PX4_WARN("SP: %.4f %.4f %.4f",(double)thrust_sp(0),(double)thrust_sp(1),(double)thrust_sp(2));
+*/	
+}
+
+
+void
+MulticopterPositionControl::automatic_hor_force()
+{
+	
+}
+
+
 
 int
 MulticopterPositionControl::parameters_update(bool force)
@@ -1204,7 +1303,8 @@ void MulticopterPositionControl::control_auto(float dt)
 void
 MulticopterPositionControl::task_main()
 {
-
+    ndi_control_initialize();
+	
 	/*
 	 * do subscriptions
 	 */
@@ -1936,33 +2036,9 @@ MulticopterPositionControl::task_main()
 					
 		 		    _thrust_sp_body = _R.transposed() * thrust_sp;
 				    _att_sp.timestamp = hrt_absolute_time();
-					/*
-					//HILICOPTER
-					if(fabs(thrust_sp(0)) <= 0.2f){
-						_att_sp.hor_force_sp[0] = _thrust_sp_body(0) * 2.0f;
-						_att_sp.pitch_body = 0.0f;
-					} else {
-						_att_sp.hor_force_sp[0] = 0.0f;
-					}
 					
-					if(fabs(thrust_sp(1)) <= 0.2f){
-						_att_sp.hor_force_sp[1] = _thrust_sp_body(1) * 2.0f;
-						_att_sp.roll_body = 0.0f;
-					} else {
-						_att_sp.hor_force_sp[1] = 0.0f;
-					}
-					
-					R.from_euler(_att_sp.roll_body, _att_sp.pitch_body, _att_sp.yaw_body);
-					memcpy(&_att_sp.R_body[0], R.data, sizeof(_att_sp.R_body));
-					_att_sp.R_valid = true;
-					math::Quaternion q_sp;
-					q_sp.from_dcm(R);
-					memcpy(&_att_sp.q_d[0], &q_sp.data[0], sizeof(_att_sp.q_d));
-					
-		
-		   			PX4_WARN("VEL: %.4f %.4f %.4f",(double)_vel_sp(0),(double)_vel_sp(1),(double)_vel_sp(2));		
-		   			PX4_WARN("SP: %.4f %.4f %.4f",(double)thrust_sp(0),(double)thrust_sp(1),(double)thrust_sp(2));
-					*/
+					px4_hor_force();	
+								
 				} else {
 					reset_int_z = true;
 				}
@@ -2036,16 +2112,7 @@ MulticopterPositionControl::task_main()
 				_att_sp.roll_body = _manual.y * _params.man_roll_max;
 				_att_sp.pitch_body = -_manual.x * _params.man_pitch_max;
 				
-				//_control_mode.flag_control_horizonforce_enabled = true; //HILICOPTER
-				if(_control_mode.flag_control_horizonforce_enabled){
-					_att_sp.roll_body = 0.0f;
-					_att_sp.pitch_body = 0.0f;
-					_att_sp.hor_force_sp[0] = _manual.x;
-					_att_sp.hor_force_sp[1] = _manual.y;
-				} else{
-					_att_sp.hor_force_sp[0] = 0.0f;
-					_att_sp.hor_force_sp[1] = 0.0f;
-				}
+				manual_hor_force();
 				
 			}
 

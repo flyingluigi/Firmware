@@ -264,8 +264,8 @@ MultirotorMixer::mix(float *outputs, unsigned space, uint16_t *status_reg)
 		float roll_pitch_scale = 1.0f;	// scale for demanded roll and pitch
 
 		// thrust boost parameters
-		float thrust_increase_factor = 1.5f;
-		float thrust_decrease_factor = 0.6f;
+		//float thrust_increase_factor = 1.5f;
+		//float thrust_decrease_factor = 0.6f;
 
 
 		/* Testcase */
@@ -376,13 +376,13 @@ MultirotorMixer::mix(float *outputs, unsigned space, uint16_t *status_reg)
 			                  a = -out;
 			              }
 				          if ((fabsf(hili_fx_scale[i]) > 0.0f) && (fabsf(hili_fy_scale[i]) <= 0.0f)){
-				              float fx_n = constrain((fabsf(fx) - a)/fabs(fx),0.0f,1.0f);
+				              float fx_n = constrain((fabsf(fx) - a)/fabsf(fx),0.0f,1.0f);
 				              if  (scale_x > fx_n){
 				                  scale_x = fx_n;
 				              }
 				          }
 				          if (fabsf(hili_fx_scale[i]) <= 0.0f && fabsf(hili_fy_scale[i]) > 0.0f){
-				              float fy_n = constrain((fabsf(fy) - a)/fabs(fy),0.0f,1.0f);
+				              float fy_n = constrain((fabsf(fy) - a)/fabsf(fy),0.0f,1.0f);
 				              if  (scale_y > fy_n){
 				                   scale_y = fy_n;
 				              }
