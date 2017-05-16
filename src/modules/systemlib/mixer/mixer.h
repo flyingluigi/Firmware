@@ -556,9 +556,9 @@ private:
 	float				_pitch_scale;
 	float				_yaw_scale;
 	float				_idle_speed;
-    bool				_is_hilicopter;
 	float 				_delta_out_max;
 
+    bool				_is_hilicopter;
 	orb_advert_t			_limits_pub;
 	multirotor_motor_limits_s 	_limits;
 

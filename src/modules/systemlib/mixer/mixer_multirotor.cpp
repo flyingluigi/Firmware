@@ -75,6 +75,9 @@ float constrain(float val, float min, float max)
 {
 	return (val < min) ? min : ((val > max) ? max : val);
 }
+template <typename T> int sign(T val) {
+    return (T(0) < val) - (val < T(0));
+}
 
 } // anonymous namespace
 
