@@ -1005,6 +1005,8 @@ MulticopterAttitudeControl::task_main()
 				_actuators.control[2] = (PX4_ISFINITE(_att_control(2))) ? _att_control(2) : 0.0f;
 				_actuators.control[3] = (PX4_ISFINITE(_thrust_sp)) ? _thrust_sp : 0.0f;
 				_actuators.control[7] = _v_att_sp.landing_gear;
+				_actuators.control[8] = (PX4_ISFINITE(math::constrain(_v_att_sp.hor_force_sp[0], -1.0f, 1.0f))) ? math::constrain(_v_att_sp.hor_force_sp[0], -1.0f, 1.0f) : 0.0f;
+				_actuators.control[9] = (PX4_ISFINITE(math::constrain(_v_att_sp.hor_force_sp[1], -1.0f, 1.0f))) ? math::constrain(_v_att_sp.hor_force_sp[1], -1.0f, 1.0f) : 0.0f;
 				_actuators.timestamp = hrt_absolute_time();
 				_actuators.timestamp_sample = _ctrl_state.timestamp;
 

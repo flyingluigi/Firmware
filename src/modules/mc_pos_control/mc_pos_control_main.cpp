@@ -353,6 +353,12 @@ private:
 	 * Main sensor collection task.
 	 */
 	void		task_main();
+	
+	/**
+ 	* routine for direct manual horizontal force commands
+ 	*/
+	void		manual_hor_force();
+	
 };
 
 namespace pos_control
@@ -494,6 +500,24 @@ MulticopterPositionControl::MulticopterPositionControl() :
 
 	/* fetch initial parameter values */
 	parameters_update(true);
+}
+
+/**
+* manual force control included in manual mode line: 2062
+*/
+void 
+MulticopterPositionControl::manual_hor_force()
+{
+	_control_mode.flag_control_horizonforce_enabled = false; //HILICOPTER MODE! 
+	if(_control_mode.flag_control_horizonforce_enabled){
+		_att_sp.roll_body  = 0.0f;
+		_att_sp.pitch_body = 0.0f;
+		_att_sp.hor_force_sp[0] = _manual.x;
+		_att_sp.hor_force_sp[1] = _manual.y;
+	} else{
+		_att_sp.hor_force_sp[0] = 0.0f;
+		_att_sp.hor_force_sp[1] = 0.0f;
+	}
 }
 
 MulticopterPositionControl::~MulticopterPositionControl()
@@ -2167,6 +2191,7 @@ MulticopterPositionControl::task_main()
 					_att_sp.roll_body = -atan2f(z_roll_pitch_sp(1), z_roll_pitch_sp(2));
 				}
 
+				manual_hor_force();
 				/* copy quaternion setpoint to attitude setpoint topic */
 				matrix::Quatf q_sp = matrix::Eulerf(_att_sp.roll_body, _att_sp.pitch_body, _att_sp.yaw_body);
 				memcpy(&_att_sp.q_d[0], q_sp.data(), sizeof(_att_sp.q_d));

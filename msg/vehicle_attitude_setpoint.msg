@@ -32,5 +32,7 @@ bool apply_flaps
 
 float32 landing_gear
 
+float32[2] hor_force_sp 		# Desired horizontal force in body frame
+
 # WAS vehicle_attitude_setpoint mc_virtual_attitude_setpoint fw_virtual_attitude_setpoint
 # TOPICS vehicle_attitude_setpoint

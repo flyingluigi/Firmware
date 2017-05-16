@@ -91,6 +91,7 @@ MultirotorMixer::MultirotorMixer(ControlCallback control_cb,
 	_yaw_scale(yaw_scale),
 	_idle_speed(-1.0f + idle_speed * 2.0f),	/* shift to output range here to avoid runtime calculation */
 	_delta_out_max(0.0f),
+	_is_hilicopter(geometry == MultirotorGeometry::OCTA_HILI), /* check if the system is in hilicopter mode*/
 	_limits_pub(),
 	_rotor_count(_config_rotor_count[(MultirotorGeometryUnderlyingType)geometry]),
 	_rotors(_config_index[(MultirotorGeometryUnderlyingType)geometry]),
@@ -186,7 +187,10 @@ MultirotorMixer::from_text(Mixer::ControlCallback control_cb, uintptr_t cb_handl
 
 	} else if (!strcmp(geomname, "8x")) {
 		geometry = MultirotorGeometry::OCTA_X;
-
+		
+	} else if (!strcmp(geomname, "8h")) {
+		geometry = MultirotorGeometry::OCTA_HILI;
+		
 	} else if (!strcmp(geomname, "8c")) {
 		geometry = MultirotorGeometry::OCTA_COX;
 
@@ -245,6 +249,195 @@ MultirotorMixer::mix(float *outputs, unsigned space, uint16_t *status_reg)
 		(*status_reg) = 0;
 	}
 
+	
+	if(_is_hilicopter){
+		
+		static float c_45 = 0.707107f;
+		static float tilt_angle = 0.6981317f; /*40° in rad*/
+		static float kmt = 0.001f;
+		static float sd = sinf(tilt_angle);
+		static float cd = cosf(tilt_angle);
+		static float h = cd / (2.0f * c_45);
+		static float m = sd * kmt / (10.0f* c_45);
+		static float hili_fx_scale[8] = {-1.0f,h+m,0.0f,-(h-m),1.0f,-(h+m),0.0f,h-m};
+		static float hili_fy_scale[8] = {0.0f,h+m,-1.0f,h-m,0.0f,-(h+m),1.0f,-(h-m)}; 
+		static float hili_roll_scale[8] = {0.0f,-1.0f,0.0f,-1.0f,0.0f,1.0f,0.0f,1.0f};
+		static float hili_pitch_scale[8] = {0.0f,1.0f,0.0f,-1.0f,0.0f,-1.0f,0.0f,1.0f};
+		static float hili_yaw_scale[8] = {-cd,-1.0f,cd,1.0f,-cd,-1.0f,cd,1.0f};
+		static float hili_thrust_scale[8] = {cd,1.0f,cd,1.0f,cd,1.0f,cd,1.0f};	
+		
+		float	fx = constrain(get_control(0, 8), -1.0f, 1.0f);
+		float	fy = constrain(get_control(0, 9), -1.0f, 1.0f);
+		
+		float roll_pitch_scale = 1.0f;	// scale for demanded roll and pitch
+
+		// thrust boost parameters
+		//float thrust_increase_factor = 1.5f;
+		//float thrust_decrease_factor = 0.6f;
+
+
+		/* Testcase */
+		
+		//fy = 1.0f;
+			
+		/* Testcase */
+
+		/* perform initial mix pass yielding unbounded outputs, ignore yaw */
+		for (unsigned i = 0; i < _rotor_count; i++) {
+			
+			float out = roll * hili_roll_scale[i] +
+				   	pitch * hili_pitch_scale[i] +
+				   	  thrust * hili_thrust_scale[i];	
+		
+			/* calculate min and max output values */
+			if (out < min_out) {
+				min_out = out;
+			}
+
+			if (out > max_out) {
+				max_out = out;
+			}
+		}
+		
+		if (min_out < 0.0f && max_out < 1.0f) {
+			
+			roll_pitch_scale = thrust / (thrust - min_out);
+			
+		} else if (max_out > 1.0f && min_out > 0.0f) {
+			
+			roll_pitch_scale = (1 - thrust) / (max_out - thrust);
+			
+		} else if (min_out <= 0.0f && max_out >= 1.0f){
+			if (fabsf(min_out) > (max_out - 1.0f)){
+				roll_pitch_scale = thrust / (thrust - min_out);
+			} else {
+				roll_pitch_scale = (1 - thrust) / (max_out - thrust);
+			}
+		}
+
+		// notify if saturation has occurred
+		if (min_out < 0.0f) {
+			if (status_reg != NULL) {
+				(*status_reg) |= PX4IO_P_STATUS_MIXER_LOWER_LIMIT;
+			}
+		}
+
+		if (max_out > 1.0f) {
+			if (status_reg != NULL) {
+				(*status_reg) |= PX4IO_P_STATUS_MIXER_UPPER_LIMIT;
+			}
+		}
+
+		// mix again but now with thrust boost, scale roll/pitch and also add yaw
+		for (unsigned i = 0; i < _rotor_count; i++) {
+			float out;
+			out = (roll * hili_roll_scale[i] +
+				   	pitch * hili_pitch_scale[i]) * roll_pitch_scale  +
+					 yaw * hili_yaw_scale[i] +
+				   	  thrust * hili_thrust_scale[i];	
+	    
+			// scale yaw if it violates limits. inform about yaw limit reached
+			if (out < 0.0f) {
+				if (fabsf(hili_yaw_scale[i]) <= FLT_EPSILON) {
+					yaw = 0.0f;
+
+				} else {
+						yaw = -((roll * hili_roll_scale[i] + pitch * hili_pitch_scale[i]) *
+						roll_pitch_scale + thrust) * sign(hili_yaw_scale[i]);
+				
+				}
+
+				if (status_reg != NULL) {
+					(*status_reg) |= PX4IO_P_STATUS_MIXER_YAW_LIMIT;
+				}
+
+			} else if (out > 1.0f) {
+				
+				if (fabsf(hili_yaw_scale[i]) <= FLT_EPSILON) {
+					yaw = 0.0f;
+
+				} else {
+				
+					yaw = (1.0f - ((roll * hili_roll_scale[i] + pitch * hili_pitch_scale[i]) *
+						       roll_pitch_scale + thrust)) * sign(hili_yaw_scale[i]);
+			
+				}
+
+				if (status_reg != NULL) {
+					(*status_reg) |= PX4IO_P_STATUS_MIXER_YAW_LIMIT;
+				}
+			}
+		}
+
+		float  scale_x = 1.0f;
+		float  scale_y = 1.0f;
+		for (unsigned i = 0; i < _rotor_count; i++) {
+			float out = (roll * hili_roll_scale[i] +
+				   	pitch * hili_pitch_scale[i] ) * roll_pitch_scale +
+				   	 yaw * hili_yaw_scale[i] +
+				   	  thrust * hili_thrust_scale[i] + hili_fx_scale[i] * fx + hili_fy_scale[i] * fy;		
+			if(out < 0.0f || out > 1.0f){
+			             float a = 0.0f;
+						  if (out > 1.0f){
+			                  a = out - 1;
+			              } else{
+			                  a = -out;
+			              }
+				          if ((fabsf(hili_fx_scale[i]) > 0.0f) && (fabsf(hili_fy_scale[i]) <= 0.0f)){
+				              float fx_n = constrain((fabsf(fx) - a)/fabsf(fx),0.0f,1.0f);
+				              if  (scale_x > fx_n){
+				                  scale_x = fx_n;
+				              }
+				          }
+				          if (fabsf(hili_fx_scale[i]) <= 0.0f && fabsf(hili_fy_scale[i]) > 0.0f){
+				              float fy_n = constrain((fabsf(fy) - a)/fabsf(fy),0.0f,1.0f);
+				              if  (scale_y > fy_n){
+				                   scale_y = fy_n;
+				              }
+				          }
+            
+			        }
+			}
+			
+			
+			float scale_xy = 1.0f;
+			// mix again again but now with thrust boost, scale roll/pitch, yaw and also add fx,fy
+			for (unsigned i = 0; i < _rotor_count; i++){
+				float out = (roll * hili_roll_scale[i] +
+					   	pitch * hili_pitch_scale[i] ) * roll_pitch_scale +
+					   	 yaw * hili_yaw_scale[i] +
+					   	  thrust * hili_thrust_scale[i] + hili_fx_scale[i] * fx * scale_x + hili_fy_scale[i] * fy * scale_y;		
+				if(out < 0.0f || out > 1.0f){
+				    if (fabsf(hili_fx_scale[i]) > 0.0f && fabsf(hili_fy_scale[i]) > 0.0f){
+						float a = 0.0f;
+				        if (out > 1.0f){
+				        	a = out - 1;
+				    	} else{
+				        	a = -out;
+				   	 	}
+						float b = fabsf(hili_fx_scale[i] * fx * scale_x + hili_fy_scale[i] * fy * scale_y);
+				    	float scale_xy_n = constrain((b - a)/b,0.0f,1.0f);
+            
+				    	if  (scale_xy > scale_xy_n){
+				             scale_xy = scale_xy_n;
+				    	}
+            
+				  }
+				}
+
+			}
+			
+		/* add yaw and scale outputs to range idle_speed...1 */
+		for (unsigned i = 0; i < _rotor_count; i++) {
+			outputs[i] = (roll * hili_roll_scale[i] +
+				   	pitch * hili_pitch_scale[i] ) * roll_pitch_scale +
+				   	 yaw * hili_yaw_scale[i] +
+				   	  thrust * hili_thrust_scale[i] + (hili_fx_scale[i] * fx * scale_x + hili_fy_scale[i] * fy*scale_y) * scale_xy;
+			
+			outputs[i] = constrain(_idle_speed + (outputs[i] * (1.0f - _idle_speed)), _idle_speed, 1.0f);
+		}	
+		
+	} else{
 	// thrust boost parameters
 	float thrust_increase_factor = 1.5f;
 	float thrust_decrease_factor = 0.6f;
@@ -389,7 +582,8 @@ MultirotorMixer::mix(float *outputs, unsigned space, uint16_t *status_reg)
 		_outputs_prev[i] = outputs[i];
 
 	}
-
+	
+	}
 	// this will force the caller of the mixer to always supply new slew rate values, otherwise no slew rate limiting will happen
 	_delta_out_max = 0.0f;
 
