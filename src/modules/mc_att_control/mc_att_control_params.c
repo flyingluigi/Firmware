@@ -418,3 +418,18 @@ PARAM_DEFINE_FLOAT(MC_TPA_SLOPE, 1.0f);
  * @group Multicopter Attitude Control
  */
 PARAM_DEFINE_INT32(MC_BAT_SCALE_EN, 0);
+
+
+/**
+ * Filter coefficient for derivative term in rate control
+ *
+ * Filter method is forward euler z_pole = 1 - NTs
+ * N determines the pole location of the filter in the derivative action.
+ *
+ * @min 0.0
+ * @max 500.9
+ * @decimal 2
+ * @increment 0.1
+ * @group Multicopter Attitude Control
+ */
+PARAM_DEFINE_FLOAT(MC_RATE_N, 50.0f);

@@ -468,3 +468,39 @@ PARAM_DEFINE_FLOAT(MPC_ACC_HOR_MAX, 5.0f);
  * @group Multicopter Position Control
  */
 PARAM_DEFINE_INT32(MPC_ALT_MODE, 0);
+
+/**
+ * Horizontal acceleration gain for Hilicopter Mode
+ *
+ * @min 0.1
+ * @max 5
+ * @decimal 2
+ * @increment 1
+ * @group Multicopter Position Control
+ */
+PARAM_DEFINE_FLOAT(MPC_HOR_ACC_GAIN, 2.0f);
+
+/**
+ * Maximum velocity command for horizontal translation
+ *
+ * @min 0.1
+ * @max 5
+ * @decimal 2
+ * @increment 1
+ * @group Multicopter Position Control
+ */
+PARAM_DEFINE_FLOAT(MPC_HOR_ACC_VEL, 1.5f);
+
+/**
+ * Velocity command to switch from bank to horizontal translation 
+ *
+ * @min 0.1
+ * @max 5
+ * @decimal 2
+ * @increment 1
+ * @group Multicopter Position Control
+ */
+PARAM_DEFINE_FLOAT(MPC_HOR_ACC_HYST, 0.3f);
+
+PARAM_DEFINE_FLOAT(MPC_HOR_OFF_PI, 0.0f);
+PARAM_DEFINE_FLOAT(MPC_HOR_OFF_RO, 0.0f);

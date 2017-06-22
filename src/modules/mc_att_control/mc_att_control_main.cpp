@@ -177,6 +177,8 @@ private:
 
 	math::Matrix<3, 3>  _I;				/**< identity matrix */
 
+	math::Vector<3> _filter_DSTATE;
+		
 	struct {
 		param_t roll_p;
 		param_t roll_rate_p;
@@ -213,7 +215,7 @@ private:
 		param_t vtol_wv_yaw_rate_scale;
 
 		param_t bat_scale_en;
-
+		param_t rate_N;
 	}		_params_handles;		/**< handles for interesting parameters */
 
 	struct {
@@ -240,6 +242,7 @@ private:
 		float vtol_wv_yaw_rate_scale;			/**< Scale value [0, 1] for yaw rate setpoint  */
 
 		int bat_scale_en;
+		float rate_N;
 	}		_params;
 
 	TailsitterRecovery *_ts_opt_recovery;	/**< Computes optimal rates for tailsitter recovery */
@@ -387,7 +390,7 @@ MulticopterAttitudeControl::MulticopterAttitudeControl() :
 	_att_control.zero();
 
 	_I.identity();
-
+	_filter_DSTATE.zero();
 	_params_handles.roll_p			= 	param_find("MC_ROLL_P");
 	_params_handles.roll_rate_p		= 	param_find("MC_ROLLRATE_P");
 	_params_handles.roll_rate_i		= 	param_find("MC_ROLLRATE_I");
@@ -420,7 +423,7 @@ MulticopterAttitudeControl::MulticopterAttitudeControl() :
 	_params_handles.vtol_opt_recovery_enabled	= param_find("VT_OPT_RECOV_EN");
 	_params_handles.vtol_wv_yaw_rate_scale		= param_find("VT_WV_YAWR_SCL");
 	_params_handles.bat_scale_en		= param_find("MC_BAT_SCALE_EN");
-
+	_params_handles.rate_N = param_find("MC_RATE_N");
 
 
 	/* fetch initial parameter values */
@@ -551,6 +554,9 @@ MulticopterAttitudeControl::parameters_update()
 	param_get(_params_handles.vtol_wv_yaw_rate_scale, &_params.vtol_wv_yaw_rate_scale);
 
 	param_get(_params_handles.bat_scale_en, &_params.bat_scale_en);
+
+	param_get(_params_handles.rate_N, &v);
+	_params.rate_N = v;
 
 	_actuators_0_circuit_breaker_enabled = circuit_breaker_enabled("CBRK_RATE_CTRL", CBRK_RATE_CTRL_KEY);
 
@@ -801,6 +807,7 @@ MulticopterAttitudeControl::control_attitude_rates(float dt)
 	/* reset integral if disarmed */
 	if (!_armed.armed || !_vehicle_status.is_rotary_wing) {
 		_rates_int.zero();
+		_filter_DSTATE.zero();
 	}
 
 	/* current body angular rates */
@@ -814,10 +821,16 @@ MulticopterAttitudeControl::control_attitude_rates(float dt)
 
 	/* angular rates error */
 	math::Vector<3> rates_err = _rates_sp - rates;
-
-	_att_control = _params.rate_p.emult(rates_err * tpa) + _params.rate_d.emult(_rates_prev - rates) / dt + _rates_int +
-		       _params.rate_ff.emult(_rates_sp);
-
+	
+	
+	math::Vector<3> rtb_FilterCoefficient = (_params.rate_d.emult(-rates) - _filter_DSTATE) * _params.rate_N; // _params.rate_N * 
+	
+	_filter_DSTATE += rtb_FilterCoefficient * dt;
+	
+	_att_control = _params.rate_p.emult(rates_err * tpa) + rtb_FilterCoefficient + _rates_int + _params.rate_ff.emult(_rates_sp);
+	
+	//_att_control = _params.rate_p.emult(rates_err * tpa) + _params.rate_d.emult(_rates_prev - rates) / dt + _rates_int + _params.rate_ff.emult(_rates_sp);
+	
 	_rates_sp_prev = _rates_sp;
 	_rates_prev = rates;
 
@@ -1005,8 +1018,8 @@ MulticopterAttitudeControl::task_main()
 				_actuators.control[2] = (PX4_ISFINITE(_att_control(2))) ? _att_control(2) : 0.0f;
 				_actuators.control[3] = (PX4_ISFINITE(_thrust_sp)) ? _thrust_sp : 0.0f;
 				_actuators.control[7] = _v_att_sp.landing_gear;
-				_actuators.control[8] = (PX4_ISFINITE(math::constrain(_v_att_sp.hor_force_sp[0], -1.0f, 1.0f))) ? math::constrain(_v_att_sp.hor_force_sp[0], -1.0f, 1.0f) : 0.0f;
-				_actuators.control[9] = (PX4_ISFINITE(math::constrain(_v_att_sp.hor_force_sp[1], -1.0f, 1.0f))) ? math::constrain(_v_att_sp.hor_force_sp[1], -1.0f, 1.0f) : 0.0f;
+				_actuators.control[4] = (PX4_ISFINITE(math::constrain(_v_att_sp.hor_force_sp[0], -1.0f, 1.0f))) ? math::constrain(_v_att_sp.hor_force_sp[0], -1.0f, 1.0f) : 0.0f;
+				_actuators.control[5] = (PX4_ISFINITE(math::constrain(_v_att_sp.hor_force_sp[1], -1.0f, 1.0f))) ? math::constrain(_v_att_sp.hor_force_sp[1], -1.0f, 1.0f) : 0.0f;
 				_actuators.timestamp = hrt_absolute_time();
 				_actuators.timestamp_sample = _ctrl_state.timestamp;
 

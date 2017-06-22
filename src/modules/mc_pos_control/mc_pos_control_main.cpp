@@ -200,7 +200,11 @@ private:
 		param_t acc_hor_max;
 		param_t alt_mode;
 		param_t opt_recover;
-
+		param_t hor_acc_gain;
+		param_t hor_acc_velmax;
+		param_t hor_acc_velmin;
+		param_t hor_acc_off_p;
+		param_t hor_acc_off_r;
 	}		_params_handles;		/**< handles for interesting parameters */
 
 	struct {
@@ -225,7 +229,11 @@ private:
 		float vel_max_up;
 		float vel_max_down;
 		uint32_t alt_mode;
-
+		float hor_acc_gain;
+		float hor_acc_velmax;
+		float hor_acc_velmin;
+		float hor_acc_off_p;
+		float hor_acc_off_r;
 		int opt_recover;
 
 		math::Vector<3> pos_p;
@@ -277,6 +285,8 @@ private:
 	uint8_t _vz_reset_counter;
 	uint8_t _vxy_reset_counter;
 	uint8_t _heading_reset_counter;
+
+	matrix::Dcmf _R_setpoint;
 
 	/**
 	 * Update our local parameter cache.
@@ -359,6 +369,10 @@ private:
  	*/
 	void		manual_hor_force();
 	
+	/**
+ 	* routine for automatic horizontal force control with simulink velocity controller
+ 	*/
+	void	 automatic_hor_force(math::Vector<3>  thrust_sp);
 };
 
 namespace pos_control
@@ -454,6 +468,7 @@ MulticopterPositionControl::MulticopterPositionControl() :
 	_vel_err_d.zero();
 
 	_R.identity();
+	_R_setpoint.identity();
 
 	_params_handles.thr_min		= param_find("MPC_THR_MIN");
 	_params_handles.thr_max		= param_find("MPC_THR_MAX");
@@ -497,27 +512,135 @@ MulticopterPositionControl::MulticopterPositionControl() :
 	_params_handles.acc_hor_max = param_find("MPC_ACC_HOR_MAX");
 	_params_handles.alt_mode = param_find("MPC_ALT_MODE");
 	_params_handles.opt_recover = param_find("VT_OPT_RECOV_EN");
-
+	_params_handles.hor_acc_gain = param_find("MPC_HOR_ACC_GAIN");
+	_params_handles.hor_acc_velmax = param_find("MPC_HOR_ACC_VEL");
+	_params_handles.hor_acc_velmin = param_find("MPC_HOR_ACC_HYST");
+	_params_handles.hor_acc_off_p =  param_find("MPC_HOR_OFF_PI");
+	_params_handles.hor_acc_off_r = param_find("MPC_HOR_OFF_RO");
 	/* fetch initial parameter values */
 	parameters_update(true);
 }
 
+namespace
+{
+
+template <typename T> int sign(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+} // anonymous namespace
 /**
 * manual force control included in manual mode line: 2062
 */
 void 
 MulticopterPositionControl::manual_hor_force()
 {
-	_control_mode.flag_control_horizonforce_enabled = false; //HILICOPTER MODE! 
 	if(_control_mode.flag_control_horizonforce_enabled){
-		_att_sp.roll_body  = 0.0f;
-		_att_sp.pitch_body = 0.0f;
-		_att_sp.hor_force_sp[0] = _manual.x;
-		_att_sp.hor_force_sp[1] = _manual.y;
+		
+		_att_sp.hor_force_sp[0] = _manual.x * 2;
+		_att_sp.hor_force_sp[1] = _manual.y * 2;
+		_att_sp.pitch_body = (fabsf(_manual.x) - 0.5f) * _params.man_pitch_max * 2.0f * -sign(_manual.x);
+		_att_sp.roll_body = (fabsf(_manual.y) - 0.5f) * _params.man_roll_max * 2.0f * sign(_manual.y);
+		
+		static bool _hyst_p = false;
+		static bool _hyst_r = false;
+		
+		/*hysteresis code for x axis*/
+		if(fabsf(_manual.x) > 0.5f){ 
+			_hyst_p = true;
+			_att_sp.hor_force_sp[0] = 0.0f;
+		} else {
+			if (fabsf(_manual.x) < 0.2f){
+				_hyst_p = false;
+				_att_sp.pitch_body = 0.0f + _params.hor_acc_off_p;
+			} else{
+				if(_hyst_p){
+					_att_sp.hor_force_sp[0] = 0.0f;
+				} else {
+					_att_sp.pitch_body = 0.0f + _params.hor_acc_off_p;
+				}
+			}
+		}
+		/*hysteresis code for x axis*/
+		if(fabsf(_manual.y) > 0.5f){ 
+			_hyst_r = true;
+			_att_sp.hor_force_sp[1] = 0.0f;
+		} else {
+			if (fabsf(_manual.y) < 0.2f){
+				_hyst_r = false;
+				_att_sp.roll_body  = 0.0f + _params.hor_acc_off_r;
+			} else{
+				if(_hyst_r){
+					_att_sp.hor_force_sp[1] = 0.0f;
+				} else {
+					_att_sp.roll_body = 0.0f + _params.hor_acc_off_r;
+				}
+			}
+		}
+		
 	} else{
 		_att_sp.hor_force_sp[0] = 0.0f;
 		_att_sp.hor_force_sp[1] = 0.0f;
 	}
+}
+
+/**
+* automatic horizontal force control with px4 velocity controller line 2015
+*/
+void 
+MulticopterPositionControl::automatic_hor_force(math::Vector<3>  thrust_sp)
+{
+	/*Hilicopter Code Start*/
+	
+	/* calculate euler angles*/
+	matrix::Eulerf euler = _R_setpoint;
+	_att_sp.roll_body = euler(0);
+	_att_sp.pitch_body = euler(1);
+	
+	math::Vector<3> acc_sp_body = (_R.transposed() * thrust_sp);
+	math::Vector<3> vel_sp_body = (_R.transposed() * _vel_sp);
+	
+	_att_sp.hor_force_sp[0] = acc_sp_body(0) * _params.hor_acc_gain * ONE_G; 
+	_att_sp.hor_force_sp[1] = acc_sp_body(1) * _params.hor_acc_gain  * ONE_G;
+	
+	static bool _hyst_roll = false;
+	static bool _hyst_pitch = false;
+	
+	/*hysteresis code for x axis*/
+	if(fabsf((vel_sp_body(1))) > _params.hor_acc_velmax ){ 
+		_hyst_roll = true;
+		_att_sp.hor_force_sp[1] = 0.0f;
+	} else {
+		if (fabsf((vel_sp_body(1))) < _params.hor_acc_velmin){
+		_hyst_roll = false;
+		_att_sp.roll_body = 0.0f + _params.hor_acc_off_r;
+		} else{
+			if(_hyst_roll){
+				_att_sp.hor_force_sp[1] = 0.0f;
+			} else {
+				_att_sp.roll_body = 0.0f + _params.hor_acc_off_r;
+			}
+		}
+	}
+	/*hysteresis code for y axis*/
+	if(fabsf((vel_sp_body(0))) > _params.hor_acc_velmax){ 
+		_hyst_pitch = true;
+		_att_sp.hor_force_sp[0] = 0.0f;
+	} else {
+		if (fabsf((vel_sp_body(0))) < _params.hor_acc_velmin){
+		_hyst_pitch = false;
+		_att_sp.pitch_body = 0.0f + _params.hor_acc_off_p;
+		} else{
+			if(_hyst_pitch){
+				_att_sp.hor_force_sp[0] = 0.0f;
+			} else {
+				_att_sp.pitch_body = 0.0f + + _params.hor_acc_off_p;
+			}
+		}
+	}
+	
+   _R_setpoint = matrix::Eulerf(_att_sp.roll_body, _att_sp.pitch_body, _att_sp.yaw_body);
+
+	/*Hilicopter Code End*/
 }
 
 MulticopterPositionControl::~MulticopterPositionControl()
@@ -625,6 +748,7 @@ MulticopterPositionControl::parameters_update(bool force)
 		_params.hold_max_z = (v < 0.0f ? 0.0f : v);
 		param_get(_params_handles.acc_hor_max, &v);
 		_params.acc_hor_max = v;
+		
 		/*
 		 * increase the maximum horizontal acceleration such that stopping
 		 * within 1 s from full speed is feasible
@@ -656,6 +780,23 @@ MulticopterPositionControl::parameters_update(bool force)
 		/* takeoff and land velocities should not exceed maximum */
 		_params.tko_speed = fminf(_params.tko_speed, _params.vel_max_up);
 		_params.land_speed = fminf(_params.land_speed, _params.vel_max_down);
+	
+		
+		param_get(_params_handles.hor_acc_gain, &v);
+		_params.hor_acc_gain = v;
+		
+		param_get(_params_handles.hor_acc_velmax, &v);
+		_params.hor_acc_velmax = v;
+		
+		param_get(_params_handles.hor_acc_velmin, &v);
+		_params.hor_acc_velmin = v;
+		
+		param_get(_params_handles.hor_acc_off_p, &v);
+		_params.hor_acc_off_p = (v * M_PI_F) / 180.0f;
+		
+		param_get(_params_handles.hor_acc_off_r, &v);
+		_params.hor_acc_off_r = (v * M_PI_F) / 180.0f;
+		
 	}
 
 	return OK;
@@ -2036,16 +2177,20 @@ MulticopterPositionControl::task_main()
 							R(i, 1) = body_y(i);
 							R(i, 2) = body_z(i);
 						}
-
+						_R_setpoint = R;
+						
+						automatic_hor_force(thrust_sp);
+						
+						R = _R_setpoint;
 						/* copy quaternion setpoint to attitude setpoint topic */
 						matrix::Quatf q_sp = R;
 						memcpy(&_att_sp.q_d[0], q_sp.data(), sizeof(_att_sp.q_d));
 						_att_sp.q_d_valid = true;
 
 						/* calculate euler angles, for logging only, must not be used for control */
-						matrix::Eulerf euler = R;
-						_att_sp.roll_body = euler(0);
-						_att_sp.pitch_body = euler(1);
+						//matrix::Eulerf euler = R;
+						//_att_sp.roll_body = euler(0);
+						//_att_sp.pitch_body = euler(1);
 						/* yaw already used to construct rot matrix, but actual rotation matrix can have different yaw near singularity */
 
 					} else if (!_control_mode.flag_control_manual_enabled) {
