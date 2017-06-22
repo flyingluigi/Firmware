@@ -36,8 +36,12 @@ px4_add_module(
 	STACK_MAIN 1200
 	STACK_MAX 3500
 	COMPILE_FLAGS
+		-Wno-float-equal
+		-Wno-unused-variable
 	SRCS
 		mc_att_control_main.cpp
+		quad_ndi_ert_rtw/quad_ndi_data.cpp
+		quad_ndi_ert_rtw/quad_ndi.cpp
 	DEPENDS
 		platforms__common
 	)

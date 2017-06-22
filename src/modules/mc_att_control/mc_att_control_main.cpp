@@ -82,6 +82,7 @@
 #include <uORB/topics/vehicle_rates_setpoint.h>
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/uORB.h>
+#include "quad_ndi_ert_rtw/quad_ndi.h"
 
 /**
  * Multicopter attitude control app start / stop handling function
@@ -1082,7 +1083,8 @@ MulticopterAttitudeControl::task_main_trampoline(int argc, char *argv[])
 void
 MulticopterAttitudeControl::task_main()
 {
-
+        static quad_ndi_class simulink_ndi;    // Instance of model class
+        simulink_ndi.initialize();
 	/*
 	 * do subscriptions
 	 */
@@ -1181,7 +1183,7 @@ MulticopterAttitudeControl::task_main()
 				if (_ts_opt_recovery == nullptr) {
 					// the  tailsitter recovery instance has not been created, thus, the vehicle
 					// is not a tailsitter, do normal attitude control
-					control_attitude(dt);
+                                       //control_attitude(dt);
 
 				} else {
 					vehicle_attitude_setpoint_poll();
@@ -1246,20 +1248,93 @@ MulticopterAttitudeControl::task_main()
 			}
 
 			if (_v_control_mode.flag_control_rates_enabled) {
-				control_attitude_rates(dt);
+                                //control_attitude_rates(dt);
 
-				/* publish actuator controls */
-				_actuators.control[0] = (PX4_ISFINITE(_att_control(0))) ? _att_control(0) : 0.0f;
-				_actuators.control[1] = (PX4_ISFINITE(_att_control(1))) ? _att_control(1) : 0.0f;
-				_actuators.control[2] = (PX4_ISFINITE(_att_control(2))) ? _att_control(2) : 0.0f;
-				_actuators.control[3] = (PX4_ISFINITE(_thrust_sp)) ? _thrust_sp : 0.0f;
+
+                            float arg_cmd[4] = {0.0f,0.0f,0.0f,0.0f};
+
+
+                                /* get current rotation matrix from control state quaternions */
+                                math::Quaternion q_att(_ctrl_state.q[0], _ctrl_state.q[1], _ctrl_state.q[2], _ctrl_state.q[3]);
+                                math::Matrix<3, 3> R = q_att.to_dcm();
+                                math::Vector<3> euler;
+                                euler = R.to_euler();
+                                /* get transformation matrix from sensor/board to body frame */
+                                get_rot_matrix((enum Rotation)_params.board_rotation, &_board_rotation);
+
+                                /* fine tune the rotation */
+                                math::Matrix<3, 3> board_rotation_offset;
+                                board_rotation_offset.from_euler(M_DEG_TO_RAD_F * _params.board_offset[0],
+                                                                 M_DEG_TO_RAD_F * _params.board_offset[1],
+                                                                 M_DEG_TO_RAD_F * _params.board_offset[2]);
+                                _board_rotation = board_rotation_offset * _board_rotation;
+
+                                // get the raw gyro data and correct for thermal errors
+                                math::Vector<3> rates;
+
+                                if (_selected_gyro == 0) {
+                                        rates(0) = (_sensor_gyro.x - _sensor_correction.gyro_offset_0[0]) * _sensor_correction.gyro_scale_0[0];
+                                        rates(1) = (_sensor_gyro.y - _sensor_correction.gyro_offset_0[1]) * _sensor_correction.gyro_scale_0[1];
+                                        rates(2) = (_sensor_gyro.z - _sensor_correction.gyro_offset_0[2]) * _sensor_correction.gyro_scale_0[2];
+
+                                } else if (_selected_gyro == 1) {
+                                        rates(0) = (_sensor_gyro.x - _sensor_correction.gyro_offset_1[0]) * _sensor_correction.gyro_scale_1[0];
+                                        rates(1) = (_sensor_gyro.y - _sensor_correction.gyro_offset_1[1]) * _sensor_correction.gyro_scale_1[1];
+                                        rates(2) = (_sensor_gyro.z - _sensor_correction.gyro_offset_1[2]) * _sensor_correction.gyro_scale_1[2];
+
+                                } else if (_selected_gyro == 2) {
+                                        rates(0) = (_sensor_gyro.x - _sensor_correction.gyro_offset_2[0]) * _sensor_correction.gyro_scale_2[0];
+                                        rates(1) = (_sensor_gyro.y - _sensor_correction.gyro_offset_2[1]) * _sensor_correction.gyro_scale_2[1];
+                                        rates(2) = (_sensor_gyro.z - _sensor_correction.gyro_offset_2[2]) * _sensor_correction.gyro_scale_2[2];
+
+                                } else {
+                                        rates(0) = _sensor_gyro.x;
+                                        rates(1) = _sensor_gyro.y;
+                                        rates(2) = _sensor_gyro.z;
+                                }
+
+                                // rotate corrected measurements from sensor to body frame
+                                rates = _board_rotation * rates;
+
+                                // correct for in-run bias errors
+                                rates(0) -= _ctrl_state.roll_rate_bias;
+                                rates(1) -= _ctrl_state.pitch_rate_bias;
+                                rates(2) -= _ctrl_state.yaw_rate_bias;
+
+                                float arg_vehicle_attitude[6] = { euler(0), euler(1), euler(2), rates(0), rates(1), rates(2)};
+
+
+                                /* construct attitude setpoint rotation matrix */
+                                vehicle_attitude_setpoint_poll();
+                                math::Quaternion q_sp(_v_att_sp.q_d[0], _v_att_sp.q_d[1], _v_att_sp.q_d[2], _v_att_sp.q_d[3]);
+                                math::Matrix<3, 3> R_sp = q_sp.to_dcm();
+                                math::Vector<3> euler_sp;
+                                euler_sp = R_sp.to_euler();
+                                // '<Root>/vehicle_attitude_setpoint'
+                                float arg_vehicle_attitude_setpoint[4] = {euler_sp(0), euler_sp(1), _v_att_sp.yaw_sp_move_rate, _v_att_sp.thrust};
+
+                                // '<Root>/param'
+                                float arg_param[18] = { _params.rate_p(0)*500.0f, _params.rate_p(1)*500.0f, _params.rate_p(2)*500.0f, _params.rate_i(0)*0.0f, _params.rate_i(1)*0.0f, _params.rate_i(2)*0.0f, _params.rate_d(0)*500.0f, _params.rate_d(1)*500.0f,
+                                  _params.rate_d(2)*0.0f, 50.0F, 50.0F, 50.0F, _params.roll_rate_max, _params.pitch_rate_max, _params.yaw_rate_max, _params.att_p(0), _params.att_p(1), _params.att_p(2)};
+
+                                // '<Root>/cmd'<
+                                //printf("%0.2f \n",(double)_v_att_sp.thrust);
+                                simulink_ndi.step(arg_vehicle_attitude, arg_vehicle_attitude_setpoint, arg_param, arg_cmd);
+
+                                /* publish actuator controls */
+                                _actuators.control[0] = (PX4_ISFINITE(arg_cmd[0])) ? arg_cmd[0] : 0.0f;
+                                _actuators.control[1] = (PX4_ISFINITE(arg_cmd[1])) ? arg_cmd[1] : 0.0f;
+                                _actuators.control[2] = (PX4_ISFINITE(arg_cmd[2])) ? arg_cmd[2] : 0.0f;
+                                _actuators.control[3] = (PX4_ISFINITE(arg_cmd[3])) ? arg_cmd[3] : 0.0f;
+
+
 				_actuators.control[7] = _v_att_sp.landing_gear;
 				_actuators.timestamp = hrt_absolute_time();
 				_actuators.timestamp_sample = _ctrl_state.timestamp;
 
 				/* scale effort by battery status */
 				if (_params.bat_scale_en && _battery_status.scale > 0.0f) {
-					for (int i = 0; i < 4; i++) {
+                                        for (int i = 0; i < 5; i++) {
 						_actuators.control[i] *= _battery_status.scale;
 					}
 				}
