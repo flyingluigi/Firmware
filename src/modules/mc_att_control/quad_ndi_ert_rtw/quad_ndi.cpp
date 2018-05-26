@@ -1,11 +1,15 @@
 //
+// Academic License - for use in teaching, academic research, and meeting
+// course requirements at degree granting institutions only.  Not for
+// government, commercial, or other organizational use.
+//
 // File: quad_ndi.cpp
 //
 // Code generated for Simulink model 'quad_ndi'.
 //
-// Model version                  : 1.577
-// Simulink Coder version         : 8.10 (R2016a) 10-Feb-2016
-// C/C++ source code generated on : Thu Jun 22 10:09:51 2017
+// Model version                  : 1.644
+// Simulink Coder version         : 8.13 (R2017b) 24-Jul-2017
+// C/C++ source code generated on : Tue Mar 27 21:22:40 2018
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: ARM Compatible->ARM Cortex
@@ -19,183 +23,287 @@
 // Model step function
 void quad_ndi_class::step(const real32_T arg_vehicle_attitude[6], const real32_T
   arg_vehicle_attitude_setpoint[4], const real32_T arg_param[18], real32_T
-  arg_cmd[4])
+  arg_cmd[4], real32_T arg_debug[4])
 {
-  real32_T y[3];
-  static const real32_T a[9] = { 0.002F, 0.0F, 0.0F, 0.0F, 0.002F, 0.0F, 0.0F,
-    0.0F, 0.003F };
+  static const int8_T b[16] = { -1, 1, 0, 0, 0, 0, -1, 1, -1, -1, 0, 0, 0, 0, 1,
+    1 };
 
-  real32_T rtb_error;
-  real32_T rtb_FilterState;
-  real32_T rtb_NOut;
-  real32_T rtb_Iout_j;
-  real32_T rtb_NOut_o;
-  real32_T rtb_NOut_a;
+  real32_T rtb_Sum2_n;
+  real32_T rtb_Sum3;
   real32_T rtb_Sum2;
-  real32_T rtb_Sum2_i;
-  real32_T rtb_Sum2_l;
+  real32_T rtb_Sum1;
+  real32_T rtb_Sum3_f;
+  real32_T rtb_NOut_e;
+  real32_T rtb_y[4];
   int32_T i;
-  real32_T a_0[3];
+  real32_T rtb_Sum1_idx_0;
+  real32_T rtb_Sum1_idx_1;
+  real32_T rtb_Sum1_idx_2;
+  real32_T rtb_y_d;
 
-  // Outputs for Atomic SubSystem: '<Root>/control_attitude_rates'
-  // Outputs for Atomic SubSystem: '<Root>/control_attitude'
-  // Sum: '<S15>/error' incorporates:
-  //   Inport: '<Root>/param'
-  //   Inport: '<Root>/vehicle_attitude'
+  // Sum: '<S1>/Sum6' incorporates:
+  //   Abs: '<S1>/Abs'
+  //   Abs: '<S1>/Abs1'
+  //   Gain: '<S1>/Gain2'
+  //   Gain: '<S1>/Gain3'
+  //   Gain: '<S1>/Gain4'
   //   Inport: '<Root>/vehicle_attitude_setpoint'
-  //   Product: '<S12>/POut'
-  //   Sum: '<S7>/Sum5'
 
-  rtb_FilterState = (arg_vehicle_attitude_setpoint[0] - arg_vehicle_attitude[0])
-    * arg_param[15] - arg_vehicle_attitude[3];
+  rtb_Sum1 = (0.5F * (real32_T)fabs((real_T)arg_vehicle_attitude_setpoint[2]) +
+              arg_vehicle_attitude_setpoint[3]) + 0.5F * (real32_T)fabs((real_T)
+    -arg_vehicle_attitude_setpoint[0]);
 
-  // End of Outputs for SubSystem: '<Root>/control_attitude'
+  // Sum: '<S1>/Sum' incorporates:
+  //   Inport: '<Root>/vehicle_attitude_setpoint'
 
-  // Product: '<S15>/NOut' incorporates:
-  //   DiscreteIntegrator: '<S15>/Filter State'
-  //   Inport: '<Root>/param'
-  //   Inport: '<Root>/vehicle_attitude'
-  //   Product: '<S15>/Dout'
-  //   Sum: '<S15>/Sum1'
+  rtb_Sum2_n = rtb_Sum1 - arg_vehicle_attitude_setpoint[1];
 
-  rtb_NOut = ((0.0F - arg_vehicle_attitude[3] * arg_param[6]) -
-              rtDW.FilterState_DSTATE) * arg_param[9];
+  // Sum: '<S1>/Sum1' incorporates:
+  //   Inport: '<Root>/vehicle_attitude_setpoint'
 
-  // Sum: '<S15>/Sum2' incorporates:
-  //   DiscreteIntegrator: '<S15>/Integrator'
-  //   Inport: '<Root>/param'
-  //   Product: '<S15>/Pout'
+  rtb_Sum1 += arg_vehicle_attitude_setpoint[1];
 
-  rtb_Sum2 = (rtb_FilterState * arg_param[0] + rtDW.Integrator_DSTATE) +
-    rtb_NOut;
+  // Sum: '<S1>/Sum4' incorporates:
+  //   Constant: '<S1>/Constant'
+  //   Gain: '<S1>/Gain'
+  //   Gain: '<S1>/Gain2'
+  //   Inport: '<Root>/vehicle_attitude_setpoint'
+  //   Sum: '<S1>/Sum3'
 
-  // Outputs for Atomic SubSystem: '<Root>/control_attitude'
-  // Sum: '<S16>/error' incorporates:
+  rtb_Sum3 = (-arg_vehicle_attitude_setpoint[0] - arg_vehicle_attitude_setpoint
+              [2]) * 0.5F + 0.5F;
+
+  // Saturate: '<Root>/Saturation1'
+  if (rtb_Sum3 > 1.0F) {
+    // Outport: '<Root>/debug'
+    arg_debug[0] = 1.0F;
+  } else if (rtb_Sum3 < 0.0F) {
+    // Outport: '<Root>/debug'
+    arg_debug[0] = 0.0F;
+  } else {
+    // Outport: '<Root>/debug'
+    arg_debug[0] = rtb_Sum3;
+  }
+
+  // Sum: '<S1>/Sum5' incorporates:
+  //   Constant: '<S1>/Constant'
+  //   Gain: '<S1>/Gain1'
+  //   Gain: '<S1>/Gain2'
+  //   Inport: '<Root>/vehicle_attitude_setpoint'
+  //   Sum: '<S1>/Sum2'
+
+  rtb_Sum3 = ((0.0F - arg_vehicle_attitude_setpoint[2]) -
+              (-arg_vehicle_attitude_setpoint[0])) * 0.5F + 0.5F;
+
+  // Saturate: '<Root>/Saturation1'
+  if (rtb_Sum3 > 1.0F) {
+    // Outport: '<Root>/debug'
+    arg_debug[1] = 1.0F;
+  } else if (rtb_Sum3 < 0.0F) {
+    // Outport: '<Root>/debug'
+    arg_debug[1] = 0.0F;
+  } else {
+    // Outport: '<Root>/debug'
+    arg_debug[1] = rtb_Sum3;
+  }
+
+  if (rtb_Sum2_n > 1.0F) {
+    // Outport: '<Root>/debug'
+    arg_debug[2] = 1.0F;
+  } else if (rtb_Sum2_n < 0.0F) {
+    // Outport: '<Root>/debug'
+    arg_debug[2] = 0.0F;
+  } else {
+    // Outport: '<Root>/debug'
+    arg_debug[2] = rtb_Sum2_n;
+  }
+
+  if (rtb_Sum1 > 1.0F) {
+    // Outport: '<Root>/debug'
+    arg_debug[3] = 1.0F;
+  } else if (rtb_Sum1 < 0.0F) {
+    // Outport: '<Root>/debug'
+    arg_debug[3] = 0.0F;
+  } else {
+    // Outport: '<Root>/debug'
+    arg_debug[3] = rtb_Sum1;
+  }
+
+  // Outputs for Atomic SubSystem: '<Root>/stab_controller'
+  // Sum: '<S4>/Sum1' incorporates:
+  //   Gain: '<S5>/Gain'
   //   Inport: '<Root>/param'
   //   Inport: '<Root>/vehicle_attitude'
   //   Inport: '<Root>/vehicle_attitude_setpoint'
   //   Product: '<S11>/POut'
-  //   Sum: '<S7>/Sum6'
+  //   Sum: '<S5>/Sum5'
 
-  rtb_error = (arg_vehicle_attitude_setpoint[1] - arg_vehicle_attitude[1]) *
-    arg_param[16] - arg_vehicle_attitude[4];
+  rtb_Sum1 = (0.52359879F * arg_vehicle_attitude_setpoint[0] -
+              arg_vehicle_attitude[0]) * arg_param[15] - arg_vehicle_attitude[3];
 
-  // End of Outputs for SubSystem: '<Root>/control_attitude'
+  // End of Outputs for SubSystem: '<Root>/stab_controller'
 
-  // Product: '<S16>/Iout' incorporates:
+  // Product: '<S8>/NOut' incorporates:
+  //   DiscreteIntegrator: '<S8>/Filter'
   //   Inport: '<Root>/param'
+  //   Product: '<S8>/DOut'
+  //   Sum: '<S8>/SumD'
 
-  rtb_Iout_j = rtb_error * arg_param[4];
+  rtb_Sum3 = (rtb_Sum1 * arg_param[6] - rtDW.Filter_DSTATE) * arg_param[9];
 
-  // Product: '<S16>/NOut' incorporates:
-  //   DiscreteIntegrator: '<S16>/Filter State'
+  // Outputs for Atomic SubSystem: '<Root>/stab_controller'
+  // Sum: '<S4>/Sum2' incorporates:
+  //   Gain: '<S5>/Gain1'
   //   Inport: '<Root>/param'
   //   Inport: '<Root>/vehicle_attitude'
-  //   Product: '<S16>/Dout'
-  //   Sum: '<S16>/Sum1'
+  //   Inport: '<Root>/vehicle_attitude_setpoint'
+  //   Product: '<S10>/POut'
+  //   Sum: '<S5>/Sum6'
 
-  rtb_NOut_o = ((0.0F - arg_vehicle_attitude[4] * arg_param[7]) -
-                rtDW.FilterState_DSTATE_e) * arg_param[10];
+  rtb_Sum2_n = (0.52359879F * arg_vehicle_attitude_setpoint[1] -
+                arg_vehicle_attitude[1]) * arg_param[16] - arg_vehicle_attitude
+    [4];
 
-  // Sum: '<S16>/Sum2' incorporates:
-  //   DiscreteIntegrator: '<S16>/Integrator'
+  // End of Outputs for SubSystem: '<Root>/stab_controller'
+
+  // Product: '<S7>/NOut' incorporates:
+  //   DiscreteIntegrator: '<S7>/Filter'
   //   Inport: '<Root>/param'
-  //   Product: '<S16>/Pout'
+  //   Product: '<S7>/DOut'
+  //   Sum: '<S7>/SumD'
 
-  rtb_Sum2_i = (rtb_error * arg_param[1] + rtDW.Integrator_DSTATE_f) +
-    rtb_NOut_o;
+  rtb_Sum2 = (rtb_Sum2_n * arg_param[7] - rtDW.Filter_DSTATE_n) * arg_param[10];
 
-  // Sum: '<S17>/error' incorporates:
+  // Outputs for Atomic SubSystem: '<Root>/stab_controller'
+  // Sum: '<S4>/Sum3' incorporates:
+  //   Gain: '<S5>/Gain2'
   //   Inport: '<Root>/vehicle_attitude'
   //   Inport: '<Root>/vehicle_attitude_setpoint'
 
-  rtb_error = arg_vehicle_attitude_setpoint[2] - arg_vehicle_attitude[5];
+  rtb_Sum3_f = 3.14159274F * arg_vehicle_attitude_setpoint[2] -
+    arg_vehicle_attitude[5];
 
-  // Product: '<S17>/NOut' incorporates:
-  //   DiscreteIntegrator: '<S17>/Filter State'
+  // End of Outputs for SubSystem: '<Root>/stab_controller'
+
+  // Product: '<S9>/NOut' incorporates:
+  //   DiscreteIntegrator: '<S9>/Filter'
   //   Inport: '<Root>/param'
-  //   Inport: '<Root>/vehicle_attitude'
-  //   Product: '<S17>/Dout'
-  //   Sum: '<S17>/Sum1'
+  //   Product: '<S9>/DOut'
+  //   Sum: '<S9>/SumD'
 
-  rtb_NOut_a = ((0.0F - arg_vehicle_attitude[5] * arg_param[8]) -
-                rtDW.FilterState_DSTATE_f) * arg_param[10];
+  rtb_NOut_e = (rtb_Sum3_f * arg_param[8] - rtDW.Filter_DSTATE_a) * arg_param[11];
 
-  // Sum: '<S17>/Sum2' incorporates:
-  //   DiscreteIntegrator: '<S17>/Integrator'
+  // SignalConversion: '<S3>/TmpSignal ConversionAt SFunction Inport1' incorporates:
+  //   DiscreteIntegrator: '<S7>/Integrator'
+  //   DiscreteIntegrator: '<S8>/Integrator'
+  //   DiscreteIntegrator: '<S9>/Integrator'
   //   Inport: '<Root>/param'
-  //   Product: '<S17>/Pout'
+  //   MATLAB Function: '<Root>/mixer'
+  //   Product: '<S7>/POut'
+  //   Product: '<S8>/POut'
+  //   Product: '<S9>/POut'
+  //   Sum: '<S7>/Sum'
+  //   Sum: '<S8>/Sum'
+  //   Sum: '<S9>/Sum'
 
-  rtb_Sum2_l = (rtb_error * arg_param[2] + rtDW.Integrator_DSTATE_fp) +
-    rtb_NOut_a;
+  // MATLAB Function 'mixer': '<S3>:1'
+  // '<S3>:1:11'
+  rtb_Sum1_idx_0 = (rtb_Sum1 * arg_param[0] + rtDW.Integrator_DSTATE) + rtb_Sum3;
+  rtb_Sum1_idx_1 = (rtb_Sum2_n * arg_param[1] + rtDW.Integrator_DSTATE_m) +
+    rtb_Sum2;
+  rtb_Sum1_idx_2 = (rtb_Sum3_f * arg_param[2] + rtDW.Integrator_DSTATE_d) +
+    rtb_NOut_e;
 
-  // Update for DiscreteIntegrator: '<S15>/Filter State'
-  rtDW.FilterState_DSTATE += 0.004F * rtb_NOut;
-
-  // Update for DiscreteIntegrator: '<S15>/Integrator' incorporates:
-  //   Inport: '<Root>/param'
-  //   Product: '<S15>/Iout'
-
-  rtDW.Integrator_DSTATE += rtb_FilterState * arg_param[3] * 0.004F;
-
-  // Update for DiscreteIntegrator: '<S16>/Filter State'
-  rtDW.FilterState_DSTATE_e += 0.004F * rtb_NOut_o;
-
-  // Update for DiscreteIntegrator: '<S16>/Integrator'
-  rtDW.Integrator_DSTATE_f += 0.004F * rtb_Iout_j;
-
-  // Update for DiscreteIntegrator: '<S17>/Filter State'
-  rtDW.FilterState_DSTATE_f += 0.004F * rtb_NOut_a;
-
-  // Update for DiscreteIntegrator: '<S17>/Integrator' incorporates:
-  //   Inport: '<Root>/param'
-  //   Product: '<S17>/Iout'
-
-  rtDW.Integrator_DSTATE_fp += rtb_error * arg_param[5] * 0.004F;
-
-  // End of Outputs for SubSystem: '<Root>/control_attitude_rates'
-
-  // MATLAB Function: '<Root>/NDI LAW' incorporates:
-  //   Inport: '<Root>/vehicle_attitude'
+  // MATLAB Function: '<Root>/mixer' incorporates:
+  //   Inport: '<Root>/vehicle_attitude_setpoint'
   //   SignalConversion: '<S3>/TmpSignal ConversionAt SFunction Inport1'
 
-  // MATLAB Function 'NDI LAW': '<S3>:1'
-  // '<S3>:1:4'
-  //  NDI control Law
-  // '<S3>:1:4'
-  for (i = 0; i < 3; i++) {
-    y[i] = a[i + 6] * arg_vehicle_attitude[5] + (a[i + 3] *
-      arg_vehicle_attitude[4] + a[i] * arg_vehicle_attitude[3]);
-    a_0[i] = a[i + 6] * rtb_Sum2_l + (a[i + 3] * rtb_Sum2_i + a[i] * rtb_Sum2);
-  }
-
-  // SignalConversion: '<Root>/TmpSignal ConversionAtGain1Inport1' incorporates:
-  //   Gain: '<Root>/Gain2'
-  //   Inport: '<Root>/vehicle_attitude'
-  //   Inport: '<Root>/vehicle_attitude_setpoint'
-  //   MATLAB Function: '<Root>/NDI LAW'
-
-  rtb_FilterState = 9.80665F * arg_vehicle_attitude_setpoint[3];
-  rtb_NOut = (arg_vehicle_attitude[4] * y[2] - arg_vehicle_attitude[5] * y[1]) +
-    a_0[0];
-  rtb_Sum2 = (arg_vehicle_attitude[5] * y[0] - arg_vehicle_attitude[3] * y[2]) +
-    a_0[1];
-  rtb_error = (arg_vehicle_attitude[3] * y[1] - arg_vehicle_attitude[4] * y[0])
-    + a_0[2];
-
-  // Outport: '<Root>/cmd' incorporates:
-  //   Gain: '<Root>/Gain1'
-  //   SignalConversion: '<Root>/TmpSignal ConversionAtGain1Inport1'
-
   for (i = 0; i < 4; i++) {
-    arg_cmd[i] = 0.0F;
-    arg_cmd[i] += rtConstP.Gain1_Gain[i] * rtb_FilterState;
-    arg_cmd[i] += rtConstP.Gain1_Gain[i + 4] * rtb_NOut;
-    arg_cmd[i] += rtConstP.Gain1_Gain[i + 8] * rtb_Sum2;
-    arg_cmd[i] += rtConstP.Gain1_Gain[i + 12] * rtb_error;
+    rtb_y_d = (real32_T)b[i + 12] * arg_vehicle_attitude_setpoint[3] +
+      ((real32_T)b[i + 8] * rtb_Sum1_idx_2 + ((real32_T)b[i + 4] *
+        rtb_Sum1_idx_1 + (real32_T)b[i] * rtb_Sum1_idx_0));
+    rtb_y[i] = rtb_y_d;
   }
 
-  // End of Outport: '<Root>/cmd'
+  // '<S3>:1:14'
+  rtb_y[0] = 0.5F * rtb_y[0] + 0.5F;
+
+  // '<S3>:1:15'
+  rtb_y[1] = 0.5F * rtb_y[1] + 0.5F;
+
+  // Saturate: '<Root>/saturation 0-1'
+  if (rtb_y[0] > 1.0F) {
+    // Outport: '<Root>/cmd'
+    arg_cmd[0] = 1.0F;
+  } else if (rtb_y[0] < 0.0F) {
+    // Outport: '<Root>/cmd'
+    arg_cmd[0] = 0.0F;
+  } else {
+    // Outport: '<Root>/cmd'
+    arg_cmd[0] = rtb_y[0];
+  }
+
+  if (rtb_y[1] > 1.0F) {
+    // Outport: '<Root>/cmd'
+    arg_cmd[1] = 1.0F;
+  } else if (rtb_y[1] < 0.0F) {
+    // Outport: '<Root>/cmd'
+    arg_cmd[1] = 0.0F;
+  } else {
+    // Outport: '<Root>/cmd'
+    arg_cmd[1] = rtb_y[1];
+  }
+
+  if (rtb_y[2] > 1.0F) {
+    // Outport: '<Root>/cmd'
+    arg_cmd[2] = 1.0F;
+  } else if (rtb_y[2] < 0.0F) {
+    // Outport: '<Root>/cmd'
+    arg_cmd[2] = 0.0F;
+  } else {
+    // Outport: '<Root>/cmd'
+    arg_cmd[2] = rtb_y[2];
+  }
+
+  if (rtb_y[3] > 1.0F) {
+    // Outport: '<Root>/cmd'
+    arg_cmd[3] = 1.0F;
+  } else if (rtb_y[3] < 0.0F) {
+    // Outport: '<Root>/cmd'
+    arg_cmd[3] = 0.0F;
+  } else {
+    // Outport: '<Root>/cmd'
+    arg_cmd[3] = rtb_y[3];
+  }
+
+  // End of Saturate: '<Root>/saturation 0-1'
+
+  // Update for DiscreteIntegrator: '<S8>/Integrator' incorporates:
+  //   Inport: '<Root>/param'
+  //   Product: '<S8>/IOut'
+
+  rtDW.Integrator_DSTATE += rtb_Sum1 * arg_param[3] * 0.004F;
+
+  // Update for DiscreteIntegrator: '<S8>/Filter'
+  rtDW.Filter_DSTATE += 0.004F * rtb_Sum3;
+
+  // Update for DiscreteIntegrator: '<S7>/Integrator' incorporates:
+  //   Inport: '<Root>/param'
+  //   Product: '<S7>/IOut'
+
+  rtDW.Integrator_DSTATE_m += rtb_Sum2_n * arg_param[4] * 0.004F;
+
+  // Update for DiscreteIntegrator: '<S7>/Filter'
+  rtDW.Filter_DSTATE_n += 0.004F * rtb_Sum2;
+
+  // Update for DiscreteIntegrator: '<S9>/Integrator' incorporates:
+  //   Inport: '<Root>/param'
+  //   Product: '<S9>/IOut'
+
+  rtDW.Integrator_DSTATE_d += rtb_Sum3_f * arg_param[5] * 0.004F;
+
+  // Update for DiscreteIntegrator: '<S9>/Filter'
+  rtDW.Filter_DSTATE_a += 0.004F * rtb_NOut_e;
 }
 
 // Model initialize function

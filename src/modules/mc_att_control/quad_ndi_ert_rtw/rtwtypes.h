@@ -1,11 +1,15 @@
 //
+// Academic License - for use in teaching, academic research, and meeting
+// course requirements at degree granting institutions only.  Not for
+// government, commercial, or other organizational use.
+//
 // File: rtwtypes.h
 //
 // Code generated for Simulink model 'quad_ndi'.
 //
-// Model version                  : 1.577
-// Simulink Coder version         : 8.10 (R2016a) 10-Feb-2016
-// C/C++ source code generated on : Thu Jun 22 10:09:51 2017
+// Model version                  : 1.644
+// Simulink Coder version         : 8.13 (R2017b) 24-Jul-2017
+// C/C++ source code generated on : Tue Mar 27 21:22:40 2018
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: ARM Compatible->ARM Cortex

@@ -2,12 +2,12 @@
 ## Makefile generated for Simulink model 'quad_ndi'. 
 ## 
 ## Makefile     : quad_ndi.mk
-## Generated on : Tue Jun 20 15:07:38 2017
-## MATLAB Coder version: 3.1 (R2016a)
+## Generated on : Wed Nov 01 17:54:22 2017
+## MATLAB Coder version: 3.4 (R2017b)
 ## 
 ## Build Info:
 ## 
-## Final product: $(RELATIVE_PATH_TO_ANCHOR)/quad_ndi.exe
+## Final product: $(RELATIVE_PATH_TO_ANCHOR)/quad_ndi
 ## Product type : executable
 ## Build type   : Top-Level Standalone Executable
 ## 
@@ -21,49 +21,41 @@
 # PRODUCT_NAME            Name of the system to build
 # MAKEFILE                Name of this makefile
 # COMPUTER                Computer type. See the MATLAB "computer" command.
-# MODELREF_LINK_RSPFILE   Include paths for the model reference build
-# PERL                    PERL Tool
-# GEN_LNK_SCRIPT          Perl script to generate the command file
-# CMD_FILE                Command file
 
 PRODUCT_NAME              = quad_ndi
 MAKEFILE                  = quad_ndi.mk
-COMPUTER                  = PCWIN64
-MATLAB_ROOT               = C:/PROGRA~1/MATLAB~1
-MATLAB_BIN                = C:/PROGRA~1/MATLAB~1/bin
-MATLAB_ARCH_BIN           = C:/PROGRA~1/MATLAB~1/bin/win64
+COMPUTER                  = GLNXA64
+MATLAB_ROOT               = /usr/local/MATLAB/R2017b
+MATLAB_BIN                = /usr/local/MATLAB/R2017b/bin
+MATLAB_ARCH_BIN           = $(MATLAB_BIN)/glnxa64
 MASTER_ANCHOR_DIR         = 
-START_DIR                 = C:/Users/mocherma/Dropbox/Matlab/miniquad_control_flip
-ARCH                      = win64
+START_DIR                 = /home/max/src/Firmware/src/modules/mc_att_control
+ARCH                      = glnxa64
 SOLVER                    = 
 SOLVER_OBJ                = 
 CLASSIC_INTERFACE         = 0
 TGT_FCN_LIB               = None
+MODEL_HAS_DYNAMICALLY_LOADED_SFCNS = 0
 MODELREF_LINK_RSPFILE_NAME = quad_ndi_ref.rsp
 RELATIVE_PATH_TO_ANCHOR   = ..
-MODELREF_LINK_RSPFILE     = quad_ndi_ref.rsp
-PERL                      = $(MATLAB_ROOT)/sys/perl/win32/bin/perl.exe
-GEN_LNK_SCRIPT            = $(MATLAB_ROOT)/rtw/c/tools/mkvc_lnk.pl
-CMD_FILE                  = $(PRODUCT_NAME).lnk
-ANSI_OPTS                 = -fwrapv
-CPP_ANSI_OPTS             = -std=c++98 -pedantic -Wno-long-long -fwrapv
+C_STANDARD_OPTS           = -Wno-long-long -fwrapv
+CPP_STANDARD_OPTS         = -std=c++98 -pedantic -Wno-long-long -fwrapv
 
 ###########################################################################
 ## TOOLCHAIN SPECIFICATIONS
 ###########################################################################
 
-# Toolchain Name:          MinGW64 v4.x | gmake (64-bit Windows)
-# Supported Version(s):    4.x
-# ToolchainInfo Version:   R2016a
+# Toolchain Name:          GNU gcc/g++ v4.4.x | gmake (64-bit Linux)
+# Supported Version(s):    4.4.x
+# ToolchainInfo Version:   R2017b
 # Specification Revision:  1.0
 # 
 #-------------------------------------------
 # Macros assumed to be defined elsewhere
 #-------------------------------------------
 
-# ANSI_OPTS
-# CPP_ANSI_OPTS
-# MINGW_ROOT
+# C_STANDARD_OPTS
+# CPP_STANDARD_OPTS
 
 #-----------
 # MACROS
@@ -73,41 +65,33 @@ WARN_FLAGS         = -Wall -W -Wwrite-strings -Winline -Wstrict-prototypes -Wnes
 WARN_FLAGS_MAX     = $(WARN_FLAGS) -Wcast-qual -Wshadow
 CPP_WARN_FLAGS     = -Wall -W -Wwrite-strings -Winline -Wpointer-arith -Wcast-align
 CPP_WARN_FLAGS_MAX = $(CPP_WARN_FLAGS) -Wcast-qual -Wshadow
-MEX_OPTS_FILE      = $(MATLAB_ROOT)/bin/win64/mexopts/mingw64.xml
-MW_EXTERNLIB_DIR   = $(MATLAB_ROOT)/extern/lib/win64/mingw64
-SHELL              = %SystemRoot%/system32/cmd.exe
 
 TOOLCHAIN_SRCS = 
 TOOLCHAIN_INCS = 
-TOOLCHAIN_LIBS = -lws2_32
+TOOLCHAIN_LIBS = 
 
 #------------------------
 # BUILD TOOL COMMANDS
 #------------------------
 
 # C Compiler: GNU C Compiler
-CC_PATH = $(MINGW_ROOT)
-CC = $(CC_PATH)/gcc
+CC = gcc
 
 # Linker: GNU Linker
-LD_PATH = $(MINGW_ROOT)
-LD = $(LD_PATH)/gcc
+LD = gcc
 
 # C++ Compiler: GNU C++ Compiler
-CPP_PATH = $(MINGW_ROOT)
-CPP = $(CPP_PATH)/g++
+CPP = g++
 
 # C++ Linker: GNU C++ Linker
-CPP_LD_PATH = $(MINGW_ROOT)
-CPP_LD = $(CPP_LD_PATH)/g++
+CPP_LD = g++
 
 # Archiver: GNU Archiver
-AR_PATH = $(MINGW_ROOT)
-AR = $(AR_PATH)/ar
+AR = ar
 
 # MEX Tool: MEX Tool
-MEX_PATH = $(MATLAB_BIN)
-MEX = $(MEX_PATH)/mex
+MEX_PATH = $(MATLAB_ARCH_BIN)
+MEX = "$(MEX_PATH)/mex"
 
 # Download: Download
 DOWNLOAD =
@@ -116,8 +100,8 @@ DOWNLOAD =
 EXECUTE = $(PRODUCT)
 
 # Builder: GMAKE Utility
-MAKE_PATH = %MATLAB%/bin/win64
-MAKE = $(MAKE_PATH)/gmake
+MAKE_PATH = %MATLAB%/bin/glnxa64
+MAKE = "$(MAKE_PATH)/gmake"
 
 
 #-------------------------
@@ -135,9 +119,9 @@ OUTPUT_FLAG         = -o
 ARDEBUG             =
 STATICLIB_OUTPUT_FLAG =
 MEX_DEBUG           = -g
-RM                  = @del
+RM                  = @rm -f
 ECHO                = @echo
-MV                  = @move
+MV                  = @mv
 RUN                 =
 
 #----------------------------------------
@@ -145,44 +129,50 @@ RUN                 =
 #----------------------------------------
 
 ARFLAGS              = ruvs
-CFLAGS               = -c $(ANSI_OPTS) \
+CFLAGS               = -c $(C_STANDARD_OPTS) -fPIC \
                        -O0
-CPPFLAGS             = -c $(CPP_ANSI_OPTS) \
+CPPFLAGS             = -c $(CPP_STANDARD_OPTS) -fPIC \
                        -O0
 CPP_LDFLAGS          = -Wl,-rpath,"$(MATLAB_ARCH_BIN)",-L"$(MATLAB_ARCH_BIN)"
-CPP_SHAREDLIB_LDFLAGS  = -shared -Wl,-rpath,"$(MATLAB_ARCH_BIN)",-L"$(MATLAB_ARCH_BIN)" -Wl,--no-undefined \
-                         -Wl,--out-implib,$(basename $(PRODUCT))$(STATICLIB_EXT)
+CPP_SHAREDLIB_LDFLAGS  = -shared -Wl,-rpath,"$(MATLAB_ARCH_BIN)",-L"$(MATLAB_ARCH_BIN)" -Wl,--no-undefined
 DOWNLOAD_FLAGS       =
 EXECUTE_FLAGS        =
 LDFLAGS              = -Wl,-rpath,"$(MATLAB_ARCH_BIN)",-L"$(MATLAB_ARCH_BIN)"
+MEX_CPPFLAGS         = -MATLAB_ARCH=$(ARCH) $(INCLUDES) \
+                         \
+                       COPTIMFLAGS="$(C_STANDARD_OPTS)  \
+                       -O0 \
+                        $(DEFINES)" \
+                         \
+                       -silent
+MEX_CPPLDFLAGS       = LDFLAGS=='$$LDFLAGS'
 MEX_CFLAGS           = -MATLAB_ARCH=$(ARCH) $(INCLUDES) \
                          \
-                       COPTIMFLAGS="$(ANSI_OPTS)  \
+                       COPTIMFLAGS="$(C_STANDARD_OPTS)  \
                        -O0 \
                         $(DEFINES)" \
                          \
                        -silent
 MEX_LDFLAGS          = LDFLAGS=='$$LDFLAGS'
 MAKE_FLAGS           = -f $(MAKEFILE)
-SHAREDLIB_LDFLAGS    = -shared -Wl,-rpath,"$(MATLAB_ARCH_BIN)",-L"$(MATLAB_ARCH_BIN)" -Wl,--no-undefined \
-                       -Wl,--out-implib,$(basename $(PRODUCT))$(STATICLIB_EXT)
+SHAREDLIB_LDFLAGS    = -shared -Wl,-rpath,"$(MATLAB_ARCH_BIN)",-L"$(MATLAB_ARCH_BIN)" -Wl,--no-undefined
 
 #--------------------
 # File extensions
 #--------------------
 
 H_EXT               = .h
-OBJ_EXT             = .obj
+OBJ_EXT             = .o
 C_EXT               = .c
-EXE_EXT             = .exe
-SHAREDLIB_EXT       = .dll
+EXE_EXT             =
+SHAREDLIB_EXT       = .so
 HPP_EXT             = .hpp
-OBJ_EXT             = .obj
+OBJ_EXT             = .o
 CPP_EXT             = .cpp
-EXE_EXT             = .exe
-SHAREDLIB_EXT       = .dll
-STATICLIB_EXT       = .lib
-MEX_EXT             = .mexw64
+EXE_EXT             =
+SHAREDLIB_EXT       = .so
+STATICLIB_EXT       = .a
+MEX_EXT             = .mexa64
 MAKE_EXT            = .mk
 
 
@@ -190,7 +180,7 @@ MAKE_EXT            = .mk
 ## OUTPUT INFO
 ###########################################################################
 
-PRODUCT = $(RELATIVE_PATH_TO_ANCHOR)/quad_ndi.exe
+PRODUCT = $(RELATIVE_PATH_TO_ANCHOR)/quad_ndi
 PRODUCT_TYPE = "executable"
 BUILD_TYPE = "Top-Level Standalone Executable"
 
@@ -198,7 +188,7 @@ BUILD_TYPE = "Top-Level Standalone Executable"
 ## INCLUDE PATHS
 ###########################################################################
 
-INCLUDES_BUILDINFO = -I$(MATLAB_ROOT)/simulink/include/sf_runtime -I$(START_DIR)/quad_ndi_ert_rtw -I$(START_DIR) -I$(MATLAB_ROOT)/extern/include -I$(MATLAB_ROOT)/simulink/include -I$(MATLAB_ROOT)/rtw/c/src -I$(MATLAB_ROOT)/rtw/c/src/ext_mode/common -I$(MATLAB_ROOT)/rtw/c/ert
+INCLUDES_BUILDINFO = -I$(START_DIR) -I$(MATLAB_ROOT)/simulink/include/sf_runtime -I$(START_DIR)/quad_ndi_ert_rtw -I$(MATLAB_ROOT)/extern/include -I$(MATLAB_ROOT)/simulink/include -I$(MATLAB_ROOT)/rtw/c/src -I$(MATLAB_ROOT)/rtw/c/src/ext_mode/common -I$(MATLAB_ROOT)/rtw/c/ert
 
 INCLUDES = $(INCLUDES_BUILDINFO)
 
@@ -206,9 +196,9 @@ INCLUDES = $(INCLUDES_BUILDINFO)
 ## DEFINES
 ###########################################################################
 
-DEFINES_BUILD_ARGS = -DONESTEPFCN=1 -DTERMFCN=0 -DMAT_FILE=0 -DMULTI_INSTANCE_CODE=1 -DINTEGER_CODE=0 -DMT=0 -DCLASSIC_INTERFACE=0 -DALLOCATIONFCN=0
+DEFINES_BUILD_ARGS = -DTERMFCN=0 -DONESTEPFCN=1 -DMAT_FILE=0 -DMULTI_INSTANCE_CODE=1 -DINTEGER_CODE=0 -DMT=0 -DCLASSIC_INTERFACE=0 -DALLOCATIONFCN=0
 DEFINES_IMPLIED = -DTID01EQ=0
-DEFINES_STANDARD = -DMODEL=quad_ndi -DNUMST=1 -DNCSTATES=0 -DHAVESTDIO
+DEFINES_STANDARD = -DMODEL=quad_ndi -DNUMST=1 -DNCSTATES=0 -DHAVESTDIO -DUNIX
 
 DEFINES = $(DEFINES_BUILD_ARGS) $(DEFINES_IMPLIED) $(DEFINES_STANDARD)
 
@@ -216,7 +206,7 @@ DEFINES = $(DEFINES_BUILD_ARGS) $(DEFINES_IMPLIED) $(DEFINES_STANDARD)
 ## SOURCE FILES
 ###########################################################################
 
-SRCS = $(START_DIR)/quad_ndi_ert_rtw/quad_ndi.cpp $(START_DIR)/quad_ndi_ert_rtw/quad_ndi_data.cpp
+SRCS = $(START_DIR)/quad_ndi_ert_rtw/quad_ndi.cpp
 
 MAIN_SRC = $(START_DIR)/quad_ndi_ert_rtw/ert_main.cpp
 
@@ -226,9 +216,9 @@ ALL_SRCS = $(SRCS) $(MAIN_SRC)
 ## OBJECTS
 ###########################################################################
 
-OBJS = quad_ndi.obj quad_ndi_data.obj
+OBJS = quad_ndi.o
 
-MAIN_OBJ = ert_main.obj
+MAIN_OBJ = ert_main.o
 
 ALL_OBJS = $(OBJS) $(MAIN_OBJ)
 
@@ -248,7 +238,7 @@ LIBS =
 ## SYSTEM LIBRARIES
 ###########################################################################
 
-SYSTEM_LIBS = 
+SYSTEM_LIBS =  -lm
 
 ###########################################################################
 ## ADDITIONAL TOOLCHAIN FLAGS
@@ -269,6 +259,10 @@ CFLAGS += $(CFLAGS_BASIC)
 CPPFLAGS_BASIC = $(DEFINES) $(INCLUDES)
 
 CPPFLAGS += $(CPPFLAGS_BASIC)
+
+###########################################################################
+## INLINED COMMANDS
+###########################################################################
 
 ###########################################################################
 ## PHONY TARGETS
@@ -309,11 +303,9 @@ execute : download
 #-------------------------------------------
 
 $(PRODUCT) : $(OBJS) $(PREBUILT_OBJS) $(MAIN_OBJ)
-	$(PERL) $(GEN_LNK_SCRIPT) $(CMD_FILE) $(OBJS)
 	@echo "### Creating standalone executable "$(PRODUCT)" ..."
-	$(CPP_LD) $(CPP_LDFLAGS) -o $(PRODUCT) @$(CMD_FILE) $(MAIN_OBJ) $(SYSTEM_LIBS) $(TOOLCHAIN_LIBS)
+	$(CPP_LD) $(CPP_LDFLAGS) -o $(PRODUCT) $(OBJS) $(MAIN_OBJ) $(SYSTEM_LIBS) $(TOOLCHAIN_LIBS)
 	@echo "### Created: $(PRODUCT)"
-	$(RM) $(CMD_FILE)
 
 
 ###########################################################################
@@ -324,51 +316,51 @@ $(PRODUCT) : $(OBJS) $(PREBUILT_OBJS) $(MAIN_OBJ)
 # SOURCE-TO-OBJECT
 #---------------------
 
-%.obj : %.c
+%.o : %.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
 
-%.obj : %.cpp
+%.o : %.cpp
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 
-%.obj : $(RELATIVE_PATH_TO_ANCHOR)/%.c
+%.o : $(RELATIVE_PATH_TO_ANCHOR)/%.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
 
-%.obj : $(RELATIVE_PATH_TO_ANCHOR)/%.cpp
+%.o : $(RELATIVE_PATH_TO_ANCHOR)/%.cpp
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 
-%.obj : $(START_DIR)/quad_ndi_ert_rtw/%.c
+%.o : $(MATLAB_ROOT)/rtw/c/src/%.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
 
-%.obj : $(START_DIR)/quad_ndi_ert_rtw/%.cpp
+%.o : $(MATLAB_ROOT)/rtw/c/src/%.cpp
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 
-%.obj : $(START_DIR)/%.c
+%.o : $(MATLAB_ROOT)/simulink/src/%.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
 
-%.obj : $(START_DIR)/%.cpp
+%.o : $(MATLAB_ROOT)/simulink/src/%.cpp
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 
-%.obj : $(MATLAB_ROOT)/rtw/c/src/%.c
+%.o : $(START_DIR)/%.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
 
-%.obj : $(MATLAB_ROOT)/rtw/c/src/%.cpp
+%.o : $(START_DIR)/%.cpp
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 
-%.obj : $(MATLAB_ROOT)/simulink/src/%.c
+%.o : $(START_DIR)/quad_ndi_ert_rtw/%.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
 
-%.obj : $(MATLAB_ROOT)/simulink/src/%.cpp
+%.o : $(START_DIR)/quad_ndi_ert_rtw/%.cpp
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 
@@ -403,7 +395,9 @@ info :
 	@echo "### CPP_SHAREDLIB_LDFLAGS = $(CPP_SHAREDLIB_LDFLAGS)"
 	@echo "### ARFLAGS = $(ARFLAGS)"
 	@echo "### MEX_CFLAGS = $(MEX_CFLAGS)"
+	@echo "### MEX_CPPFLAGS = $(MEX_CPPFLAGS)"
 	@echo "### MEX_LDFLAGS = $(MEX_LDFLAGS)"
+	@echo "### MEX_CPPLDFLAGS = $(MEX_CPPLDFLAGS)"
 	@echo "### DOWNLOAD_FLAGS = $(DOWNLOAD_FLAGS)"
 	@echo "### EXECUTE_FLAGS = $(EXECUTE_FLAGS)"
 	@echo "### MAKE_FLAGS = $(MAKE_FLAGS)"
@@ -411,8 +405,8 @@ info :
 
 clean : 
 	$(ECHO) "### Deleting all derived files..."
-	$(RM) $(subst /,\,$(PRODUCT))
-	$(RM) $(subst /,\,$(ALL_OBJS))
+	$(RM) $(PRODUCT)
+	$(RM) $(ALL_OBJS)
 	$(ECHO) "### Deleted all derived files."
 
 

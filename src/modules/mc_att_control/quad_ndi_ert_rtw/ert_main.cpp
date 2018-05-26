@@ -1,11 +1,15 @@
 //
+// Academic License - for use in teaching, academic research, and meeting
+// course requirements at degree granting institutions only.  Not for
+// government, commercial, or other organizational use.
+//
 // File: ert_main.cpp
 //
 // Code generated for Simulink model 'quad_ndi'.
 //
-// Model version                  : 1.577
-// Simulink Coder version         : 8.10 (R2016a) 10-Feb-2016
-// C/C++ source code generated on : Thu Jun 22 10:09:51 2017
+// Model version                  : 1.644
+// Simulink Coder version         : 8.13 (R2017b) 24-Jul-2017
+// C/C++ source code generated on : Tue Mar 27 21:22:40 2018
 //
 // Target selection: ert.tlc
 // Embedded hardware selection: ARM Compatible->ARM Cortex
@@ -33,6 +37,9 @@ static real32_T arg_param[18] = { 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F
 
 // '<Root>/cmd'
 static real32_T arg_cmd[4];
+
+// '<Root>/debug'
+static real32_T arg_debug[4];
 
 //
 // Associating rt_OneStep with a real-time clock or interrupt service routine
@@ -66,7 +73,7 @@ void rt_OneStep(void)
 
   // Step the model
   rtObj.step(arg_vehicle_attitude, arg_vehicle_attitude_setpoint, arg_param,
-             arg_cmd);
+             arg_cmd, arg_debug);
 
   // Get model outputs here
 

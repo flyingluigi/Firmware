@@ -1311,22 +1311,29 @@ MulticopterAttitudeControl::task_main()
                                 math::Vector<3> euler_sp;
                                 euler_sp = R_sp.to_euler();
                                 // '<Root>/vehicle_attitude_setpoint'
-                                float arg_vehicle_attitude_setpoint[4] = {euler_sp(0), euler_sp(1), _v_att_sp.yaw_sp_move_rate, _v_att_sp.thrust};
+
+                                //float arg_vehicle_attitude_setpoint[4] = {euler_sp(0), euler_sp(1), _v_att_sp.yaw_sp_move_rate, _v_att_sp.thrust};
+                                float arg_vehicle_attitude_setpoint[4] = {_manual_control_sp.y, _manual_control_sp.x, _manual_control_sp.r, _manual_control_sp.z};
 
                                 // '<Root>/param'
-                                float arg_param[18] = { _params.rate_p(0)*500.0f, _params.rate_p(1)*500.0f, _params.rate_p(2)*500.0f, _params.rate_i(0)*0.0f, _params.rate_i(1)*0.0f, _params.rate_i(2)*0.0f, _params.rate_d(0)*500.0f, _params.rate_d(1)*500.0f,
-                                  _params.rate_d(2)*0.0f, 50.0F, 50.0F, 50.0F, _params.roll_rate_max, _params.pitch_rate_max, _params.yaw_rate_max, _params.att_p(0), _params.att_p(1), _params.att_p(2)};
+                                float arg_param[18] = { _params.rate_p(0), _params.rate_p(1), _params.rate_p(2), _params.rate_i(0), _params.rate_i(1), _params.rate_i(2), _params.rate_d(0), _params.rate_d(1),
+                                  _params.rate_d(2), 50.0F, 50.0F, 50.0F, _params.roll_rate_max, _params.pitch_rate_max, _params.yaw_rate_max, _params.att_p(0), _params.att_p(1), _params.att_p(2)};
+                               // float arg_param[18] = { _params.rate_p(0)*500.0f, _params.rate_p(1)*500.0f, _params.rate_p(2)*500.0f, _params.rate_i(0)*0.0f, _params.rate_i(1)*0.0f, _params.rate_i(2)*0.0f, _params.rate_d(0)*500.0f, _params.rate_d(1)*500.0f,_params.rate_d(2)*0.0f, 50.0F, 50.0F, 50.0F, _params.roll_rate_max, _params.pitch_rate_max, _params.yaw_rate_max, _params.att_p(0), _params.att_p(1), _params.att_p(2)};
+
 
                                 // '<Root>/cmd'<
                                 //printf("%0.2f \n",(double)_v_att_sp.thrust);
-                                simulink_ndi.step(arg_vehicle_attitude, arg_vehicle_attitude_setpoint, arg_param, arg_cmd);
-
+                                float debug[4];
+                                
+                                simulink_ndi.step(arg_vehicle_attitude, arg_vehicle_attitude_setpoint, arg_param, arg_cmd, debug);
+                                
                                 /* publish actuator controls */
                                 _actuators.control[0] = (PX4_ISFINITE(arg_cmd[0])) ? arg_cmd[0] : 0.0f;
                                 _actuators.control[1] = (PX4_ISFINITE(arg_cmd[1])) ? arg_cmd[1] : 0.0f;
                                 _actuators.control[2] = (PX4_ISFINITE(arg_cmd[2])) ? arg_cmd[2] : 0.0f;
                                 _actuators.control[3] = (PX4_ISFINITE(arg_cmd[3])) ? arg_cmd[3] : 0.0f;
-
+               
+                                printf("%0.2f %0.2f %0.2f %0.2f \n",(double)debug[0],(double)debug[1],(double)debug[2],(double)debug[3]);
 
 				_actuators.control[7] = _v_att_sp.landing_gear;
 				_actuators.timestamp = hrt_absolute_time();

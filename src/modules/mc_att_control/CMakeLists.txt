@@ -40,7 +40,7 @@ px4_add_module(
 		-Wno-unused-variable
 	SRCS
 		mc_att_control_main.cpp
-		quad_ndi_ert_rtw/quad_ndi_data.cpp
+		#quad_ndi_ert_rtw/quad_ndi_data.cpp
 		quad_ndi_ert_rtw/quad_ndi.cpp
 	DEPENDS
 		platforms__common
