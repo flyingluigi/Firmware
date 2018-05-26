@@ -100,6 +100,15 @@ then
 		then
 			pwm max -c ${PWM_OUT} -p ${PWM_MAX}
 		fi
+
+		#	
+		# Set Dualcopter Values
+		#
+		pwm rate -g 0 -r 50
+		pwm rate -g 2 -r 400
+		pwm disarmed -c 12 -p 1500
+		pwm min -c 12 -p 1000
+		pwm max -c 12 -p 2000
 	fi
 
 	if [ $FAILSAFE != none ]
