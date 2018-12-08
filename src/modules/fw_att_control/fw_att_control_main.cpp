@@ -1074,7 +1074,8 @@ FixedwingAttitudeControl::task_main()
 				_yaw_ctrl.set_coordinated_method(_parameters.y_coordinated_method);
 
 				/* Run attitude controllers */
-				if (_vcontrol_mode.flag_control_attitude_enabled) {
+				if (_vcontrol_mode.flag_control_attitude_enabled) {					
+					
 					if (PX4_ISFINITE(roll_sp) && PX4_ISFINITE(pitch_sp)) {
 						_roll_ctrl.control_attitude(control_input);
 						_pitch_ctrl.control_attitude(control_input);
@@ -1178,6 +1179,18 @@ FixedwingAttitudeControl::task_main()
 
 				} else {
 					// pure rate control
+					
+					float arg_cmd[4] = {0.0f,0.0f,0.0f,0.0f};
+					
+					float arg_vehicle_attitude[6] = { _roll, _pitch, _yaw, //rates };
+									 
+					float arg_param[18] = { _parameters.p_p, _parameters.r_p, _parameters.y_p,  _params.p_i, _parameters.r_i ,_parameters.y_i, _parameters.rate_d(0), _params.rate_d(1),
+					_params.rate_d(2), 50.0F, 50.0F, 50.0F, _params.roll_rate_max, _params.pitch_rate_max, _params.yaw_rate_max, _params.att_p(0), _params.att_p(1), _params.att_p(2)};
+					
+					float debug[4];
+					
+					//simulink model
+					
 					_roll_ctrl.set_bodyrate_setpoint(_manual.y * _parameters.acro_max_x_rate_rad);
 					_pitch_ctrl.set_bodyrate_setpoint(-_manual.x * _parameters.acro_max_y_rate_rad);
 					_yaw_ctrl.set_bodyrate_setpoint(_manual.r * _parameters.acro_max_z_rate_rad);
