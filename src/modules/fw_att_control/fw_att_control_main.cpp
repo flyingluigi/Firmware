@@ -1184,8 +1184,7 @@ FixedwingAttitudeControl::task_main()
 					
 					float arg_vehicle_attitude[6] = { _roll, _pitch, _yaw, //rates };
 									 
-					float arg_param[18] = { _parameters.p_p, _parameters.r_p, _parameters.y_p,  _params.p_i, _parameters.r_i ,_parameters.y_i, _parameters.rate_d(0), _params.rate_d(1),
-					_params.rate_d(2), 50.0F, 50.0F, 50.0F, _params.roll_rate_max, _params.pitch_rate_max, _params.yaw_rate_max, _params.att_p(0), _params.att_p(1), _params.att_p(2)};
+					float arg_param[9] = { _parameters.p_p, _parameters.r_p, _parameters.y_p,  _params.p_i, _parameters.r_i ,_parameters.y_i, _parameters.man_roll_max, _parameters.man_pitch_max, _parameters.man_yaw_max};
 					
 					float debug[4];
 					
